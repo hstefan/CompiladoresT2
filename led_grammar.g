@@ -63,36 +63,60 @@ parser LED:
 	token char_literal: "'(.)'"
 	token string_literal: "\"([^\"]*)\""
     
-	rule identifier_list: identifier ( "," identifier )*
+	rule identifier_list: identifier ( "," identifier )*                                                  {{return (identifier)}}
 
-	rule generic: "[" type_expression "]"
-	rule basic_type: "int" | "real" | "char" | "bool" | "string" | "list" generic | "map" generic generic
-	rule type_decoration: "&" | ( "[" int_literal "]" )
-	rule type_expression: basic_type type_decoration*
+	rule generic: "\[" type_expression "\]"                                                               {{return ("TODO","lapergunta")}}
+	rule basic_type: "int"      {{return "int"}}
+	| "real"                    {{return "real"}}
+	| "char"                    {{return "char"}}
+	| "bool"                    {{return "bool"}}
+	|	"string"                {{return "string"}}
+	| "list" generic            {{return "listTODO"}}
+	| "map" generic generic     {{return "mapTODO"}}
+	rule type_decoration: "&"   {{return ("&TODO")}}
+	| ( "\[" int_literal "\]" ) {{return ("type","decorationTODO")}}        
+	rule type_expression: basic_type type_decoration*     {{return basic_type}}
 
-	rule bool_literal: "true" | "false"
-	rule list_literal: "[" ( expression [("," expression)*] ) " ]"
-	rule map_entry: expression ":" expression
-	rule map_literal: "{" [ map_entry ("," map_entry )* ] "}"
+	rule bool_literal: "true" {{return ("bool_literal", "true")}}
+					| "false" {{return ("bool_literal", "false")}}
+					
+	rule list_literal: "\[" ( expression [("," expression)*] ) " \]"                                      {{return ("TODO","lapergunta")}}
+	rule map_entry: expression ":" expression                                                             {{return ("TODO","lapergunta")}}
+	rule map_literal: "{" [ map_entry ("," map_entry )* ] "}"                                             {{return ("TODO","lapergunta")}}
 
-	rule value: identifier | real_literal | char_literal | bool_literal | string_literal | list_literal | map_literal
-	rule expr_e: value | "(" expression ")"
-	rule expr_d: ["not"] ["&"] expr_e [ "[" expression "]" ]
-	rule expr_c: expr_d ( ( "*" | "/" | "%" ) expr_d )*
-	rule expr_b: expr_c ( ( "+" | "-" ) expr_c )*
-	rule relational_op: "==" | "!=" | "<" | "<=" | ">" | ">="
-	rule expr_a: expr_b (relational_op expr_b )*
-	rule expression: expr_a ( ( "and" | "or" )  expr_a )*
-    rule boolean_expression: (identifier relational_op identifier)
-    rule l_value_decoration: "&" | ( "[" expression "]" ) 
-    rule l_value: identifier l_value_decoration*
-    
-    rule io_statement: ( "input" | "output" ) identifier_list
-	rule if_statement: "if" boolean_expression "then" statement* "end"
-	rule while_statement: "while" boolean_expression "do" statement* "end"
-	rule assignment: l_value ":=" expression
-	rule declaration: "var" identifier_list ":" type_expression [ ":=" expression ]
+	rule value: identifier {{return ("TODO","lapergunta")}}
+	| real_literal {{return ("TODO","lapergunta")}}
+	| char_literal {{return ("TODO","lapergunta")}}
+	| bool_literal {{return ("TODO","lapergunta")}}
+	| string_literal {{return ("TODO","lapergunta")}}
+	| list_literal {{return ("TODO","lapergunta")}}
+	| map_literal   {{return ("TODO","lapergunta")}} 
+	
+	rule expr_e: value | "\(" expression "\)"    {{return ("TODO","lapergunta")}}
+	rule expr_d: ["not"] ["&"] expr_e [ "\[" expression "\]" ] {{return ("TODO","lapergunta")}}
+	rule expr_c: expr_d ( ( "\*" | "/" | "%" ) expr_d )*       {{return ("TODO","lapergunta")}}
+	rule expr_b: expr_c ( ( "\+" | "-" ) expr_c )*             {{return ("TODO","lapergunta")}}
+	rule relational_op: "==" | "!=" | "<" | "<=" | ">" | ">="  {{return ("TODO","lapergunta")}}
+	rule expr_a: expr_b (relational_op expr_b )*               {{return ("TODO","lapergunta")}}
+	rule expression: expr_a ( ( "and" | "or" )  expr_a )*      {{return ("TODO","lapergunta")}}
+	
+    rule boolean_expression: (identifier relational_op identifier) {{return ("TODO","lapergunta")}}
+    rule l_value_decoration: "&" | ( "\[" expression "\]" )  {{return ("TODO","lapergunta")}}
+    rule l_value: identifier l_value_decoration*    {{return ("TODO","lapergunta")}}
+    rule io_statement: ( "input" | "output" ) identifier_list                      {{return ("TODO","lapergunta")}}
+	rule if_statement: "if" boolean_expression "then" statement* "end"             {{return ("TODO","lapergunta")}}
+	rule while_statement: "while" boolean_expression "do" statement* "end"         {{return ("TODO","lapergunta")}}
+	rule assignment: l_value ":=" expression                                       {{return ("TODO","lapergunta")}}
+	rule declaration: "var" identifier_list ":" type_expression [":=" expression] {{return (type_expression, identifier_list) }}  
 
-	rule statement: io_statement | if_statement | while_statement | assignment | declaration";"
+	rule statement: ( io_statement ) ";"  {{return ("io_statement","TODO")}}
+                  | ( if_statement ) ";" {{return ("if_statement","TODO")}}
+				  | ( while_statement ) ";" {{return ("while_statement","TODO")}}
+				  | ( assignment ) ";" {{return ("assignment","TODO")}}
+				  | ( declaration ) ";" {{return ("declaration", declaration)}}
 
-	rule program: statement* {{ ast = []}}}
+
+	rule program:  
+                             {{e = [] }}
+				   statement {{ e.append(statement) }}
+				             {{return e }}

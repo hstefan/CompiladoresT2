@@ -1,4 +1,4 @@
-var a : int := 0;
+var a : int;
 if a == 0 then 
     var b : int; 
 end;

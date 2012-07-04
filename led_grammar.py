@@ -23,17 +23,17 @@ class LEDScanner(runtime.Scanner):
         ('"!="', re.compile('!=')),
         ('"=="', re.compile('==')),
         ('"-"', re.compile('-')),
-        ('"+"', re.compile('\+')),
+        ('"\\+"', re.compile('\\+')),
         ('"%"', re.compile('%')),
         ('"/"', re.compile('/')),
-        ('"*"', re.compile('\*')),
+        ('"\\*"', re.compile('\\*')),
         ('"not"', re.compile('not')),
-        ('")"', re.compile('\)')),
-        ('"("', re.compile('\(')),
+        ('"\\)"', re.compile('\\)')),
+        ('"\\("', re.compile('\\(')),
         ('"}"', re.compile('}')),
         ('"{"', re.compile('{')),
         ('":"', re.compile(':')),
-        ('" ]"', re.compile(' ]')),
+        ('" \\]"', re.compile(' \\]')),
         ('"false"', re.compile('false')),
         ('"true"', re.compile('true')),
         ('"&"', re.compile('&')),
@@ -44,8 +44,8 @@ class LEDScanner(runtime.Scanner):
         ('"char"', re.compile('char')),
         ('"real"', re.compile('real')),
         ('"int"', re.compile('int')),
-        ('"]"', re.compile(']')),
-        ('"["', re.compile('[')),
+        ('"\\]"', re.compile('\\]')),
+        ('"\\["', re.compile('\\[')),
         ('","', re.compile(',')),
         ('(?:\\s*(?://[^\n]*\n)?)*', re.compile('(?:\\s*(?://[^\n]*\n)?)*')),
         ('identifier', re.compile('([a-zA-Z_][a-zA-Z0-9_]*)')),
@@ -62,150 +62,178 @@ class LED(runtime.Parser):
     def identifier_list(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'identifier_list', [])
         identifier = self._scan('identifier', context=_context)
-        while self._peek('","', '":"', '";"', '")"', '"]"', '"and"', '"or"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"+"', '"-"', '"*"', '"/"', '"%"', '" ]"', '"}"', context=_context) == '","':
+        while self._peek('","', '":"', '";"', context=_context) == '","':
             self._scan('","', context=_context)
             identifier = self._scan('identifier', context=_context)
+        return (identifier)
 
     def generic(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'generic', [])
-        self._scan('"["', context=_context)
+        self._scan('"\\["', context=_context)
         type_expression = self.type_expression(_context)
-        self._scan('"]"', context=_context)
+        self._scan('"\\]"', context=_context)
+        return ("TODO","lapergunta")
 
     def basic_type(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'basic_type', [])
         _token = self._peek('"int"', '"real"', '"char"', '"bool"', '"string"', '"list"', '"map"', context=_context)
         if _token == '"int"':
             self._scan('"int"', context=_context)
+            return "int"
         elif _token == '"real"':
             self._scan('"real"', context=_context)
+            return "real"
         elif _token == '"char"':
             self._scan('"char"', context=_context)
+            return "char"
         elif _token == '"bool"':
             self._scan('"bool"', context=_context)
+            return "bool"
         elif _token == '"string"':
             self._scan('"string"', context=_context)
+            return "string"
         elif _token == '"list"':
             self._scan('"list"', context=_context)
             generic = self.generic(_context)
+            return "listTODO"
         else: # == '"map"'
             self._scan('"map"', context=_context)
             generic = self.generic(_context)
             generic = self.generic(_context)
+            return "mapTODO"
 
     def type_decoration(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'type_decoration', [])
-        _token = self._peek('"&"', '"["', context=_context)
+        _token = self._peek('"&"', '"\\["', context=_context)
         if _token == '"&"':
             self._scan('"&"', context=_context)
-        else: # == '"["'
-            self._scan('"["', context=_context)
+            return ("&TODO")
+        else: # == '"\\["'
+            self._scan('"\\["', context=_context)
             int_literal = self._scan('int_literal', context=_context)
-            self._scan('"]"', context=_context)
+            self._scan('"\\]"', context=_context)
+            return ("type","decorationTODO")
 
     def type_expression(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'type_expression', [])
         basic_type = self.basic_type(_context)
-        while self._peek('"&"', '"["', '"]"', '":="', context=_context) in ['"&"', '"["']:
+        while self._peek('"&"', '"\\["', '"\\]"', '":="', '","', '":"', '"\\)"', '" \\]"', '";"', '"}"', context=_context) in ['"&"', '"\\["']:
             type_decoration = self.type_decoration(_context)
+        return basic_type
 
     def bool_literal(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'bool_literal', [])
         _token = self._peek('"true"', '"false"', context=_context)
         if _token == '"true"':
             self._scan('"true"', context=_context)
+            return ("bool_literal", "true")
         else: # == '"false"'
             self._scan('"false"', context=_context)
+            return ("bool_literal", "false")
 
     def list_literal(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'list_literal', [])
-        self._scan('"["', context=_context)
+        self._scan('"\\["', context=_context)
         expression = self.expression(_context)
         if 1:
-            while self._peek('","', '":"', '")"', '"]"', '"and"', '"or"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"+"', '"-"', '"*"', '"/"', '"%"', '" ]"', '";"', '"}"', context=_context) == '","':
+            while self._peek('","', '":"', '"\\)"', '"\\]"', '" \\]"', '";"', '"}"', context=_context) == '","':
                 self._scan('","', context=_context)
                 expression = self.expression(_context)
-        self._scan('" ]"', context=_context)
+        self._scan('" \\]"', context=_context)
+        return ("TODO","lapergunta")
 
     def map_entry(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'map_entry', [])
         expression = self.expression(_context)
         self._scan('":"', context=_context)
         expression = self.expression(_context)
+        return ("TODO","lapergunta")
 
     def map_literal(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'map_literal', [])
         self._scan('"{"', context=_context)
-        if self._peek('"}"', '"not"', '"&"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', '"("', '","', '":"', '")"', '"]"', '"and"', '"or"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"+"', '"-"', '"*"', '"/"', '"%"', '" ]"', '";"', context=_context) in ['"not"', '"&"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', '"("']:
+        if self._peek('"}"', '"not"', '"&"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"\\["', '"{"', '"\\("', '","', context=_context) not in ['"}"', '","']:
             map_entry = self.map_entry(_context)
-            while self._peek('","', '":"', '")"', '"]"', '"and"', '"or"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"+"', '"-"', '"*"', '"/"', '"%"', '"}"', '" ]"', '";"', context=_context) == '","':
+            while self._peek('","', '"}"', context=_context) == '","':
                 self._scan('","', context=_context)
                 map_entry = self.map_entry(_context)
         self._scan('"}"', context=_context)
+        return ("TODO","lapergunta")
 
     def value(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'value', [])
-        _token = self._peek('identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', context=_context)
+        _token = self._peek('identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"\\["', '"{"', context=_context)
         if _token == 'identifier':
             identifier = self._scan('identifier', context=_context)
+            return ("TODO","lapergunta")
         elif _token == 'real_literal':
             real_literal = self._scan('real_literal', context=_context)
+            return ("TODO","lapergunta")
         elif _token == 'char_literal':
             char_literal = self._scan('char_literal', context=_context)
-        elif _token not in ['string_literal', '"["', '"{"']:
+            return ("TODO","lapergunta")
+        elif _token not in ['string_literal', '"\\["', '"{"']:
             bool_literal = self.bool_literal(_context)
+            return ("TODO","lapergunta")
         elif _token == 'string_literal':
             string_literal = self._scan('string_literal', context=_context)
-        elif _token == '"["':
+            return ("TODO","lapergunta")
+        elif _token == '"\\["':
             list_literal = self.list_literal(_context)
+            return ("TODO","lapergunta")
         else: # == '"{"'
             map_literal = self.map_literal(_context)
+            return ("TODO","lapergunta")
 
     def expr_e(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'expr_e', [])
-        _token = self._peek('identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', '"("', context=_context)
-        if _token != '"("':
+        _token = self._peek('identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"\\["', '"{"', '"\\("', context=_context)
+        if _token != '"\\("':
             value = self.value(_context)
-        else: # == '"("'
-            self._scan('"("', context=_context)
+        else: # == '"\\("'
+            self._scan('"\\("', context=_context)
             expression = self.expression(_context)
-            self._scan('")"', context=_context)
+            self._scan('"\\)"', context=_context)
+            return ("TODO","lapergunta")
 
     def expr_d(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'expr_d', [])
-        if self._peek('"not"', '"&"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', '"("', context=_context) == '"not"':
+        if self._peek('"not"', '"&"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"\\["', '"{"', '"\\("', context=_context) == '"not"':
             self._scan('"not"', context=_context)
-        if self._peek('"&"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', '"("', context=_context) == '"&"':
+        if self._peek('"&"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"\\["', '"{"', '"\\("', context=_context) == '"&"':
             self._scan('"&"', context=_context)
         expr_e = self.expr_e(_context)
-        if self._peek('"["', '"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '")"', '"]"', '" ]"', '";"', '"}"', context=_context) == '"["':
-            self._scan('"["', context=_context)
+        if self._peek('"\\["', '"\\*"', '"/"', '"%"', '"\\+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '"\\)"', '"\\]"', '" \\]"', '";"', '"}"', context=_context) == '"\\["':
+            self._scan('"\\["', context=_context)
             expression = self.expression(_context)
-            self._scan('"]"', context=_context)
+            self._scan('"\\]"', context=_context)
+        return ("TODO","lapergunta")
 
     def expr_c(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'expr_c', [])
         expr_d = self.expr_d(_context)
-        while self._peek('"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '")"', '"]"', '" ]"', '";"', '"}"', context=_context) in ['"*"', '"/"', '"%"']:
-            _token = self._peek('"*"', '"/"', '"%"', context=_context)
-            if _token == '"*"':
-                self._scan('"*"', context=_context)
+        while self._peek('"\\*"', '"/"', '"%"', '"\\+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '"\\)"', '"\\]"', '" \\]"', '";"', '"}"', context=_context) in ['"\\*"', '"/"', '"%"']:
+            _token = self._peek('"\\*"', '"/"', '"%"', context=_context)
+            if _token == '"\\*"':
+                self._scan('"\\*"', context=_context)
             elif _token == '"/"':
                 self._scan('"/"', context=_context)
             else: # == '"%"'
                 self._scan('"%"', context=_context)
             expr_d = self.expr_d(_context)
+        return ("TODO","lapergunta")
 
     def expr_b(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'expr_b', [])
         expr_c = self.expr_c(_context)
-        while self._peek('"+"', '"-"', '"*"', '"/"', '"%"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '")"', '"]"', '" ]"', '";"', '"}"', context=_context) in ['"+"', '"-"']:
-            _token = self._peek('"+"', '"-"', context=_context)
-            if _token == '"+"':
-                self._scan('"+"', context=_context)
+        while self._peek('"\\+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '"\\)"', '"\\]"', '" \\]"', '";"', '"}"', context=_context) in ['"\\+"', '"-"']:
+            _token = self._peek('"\\+"', '"-"', context=_context)
+            if _token == '"\\+"':
+                self._scan('"\\+"', context=_context)
             else: # == '"-"'
                 self._scan('"-"', context=_context)
             expr_c = self.expr_c(_context)
+        return ("TODO","lapergunta")
 
     def relational_op(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'relational_op', [])
@@ -222,46 +250,52 @@ class LED(runtime.Parser):
             self._scan('">"', context=_context)
         else: # == '">="'
             self._scan('">="', context=_context)
+            return ("TODO","lapergunta")
 
     def expr_a(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'expr_a', [])
         expr_b = self.expr_b(_context)
-        while self._peek('"=="', '"!="', '"<"', '"<="', '">"', '">="', '"+"', '"-"', '"*"', '"/"', '"%"', '"and"', '"or"', '","', '":"', '")"', '"]"', '" ]"', '";"', '"}"', context=_context) in ['"=="', '"!="', '"<"', '"<="', '">"', '">="']:
+        while self._peek('"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '"\\)"', '"\\]"', '" \\]"', '";"', '"}"', context=_context) in ['"=="', '"!="', '"<"', '"<="', '">"', '">="']:
             relational_op = self.relational_op(_context)
             expr_b = self.expr_b(_context)
+        return ("TODO","lapergunta")
 
     def expression(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'expression', [])
         expr_a = self.expr_a(_context)
-        while self._peek('"and"', '"or"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"+"', '"-"', '"*"', '"/"', '"%"', '","', '":"', '")"', '"]"', '" ]"', '";"', '"}"', context=_context) in ['"and"', '"or"']:
+        while self._peek('"and"', '"or"', '","', '":"', '"\\)"', '"\\]"', '" \\]"', '";"', '"}"', context=_context) in ['"and"', '"or"']:
             _token = self._peek('"and"', '"or"', context=_context)
             if _token == '"and"':
                 self._scan('"and"', context=_context)
             else: # == '"or"'
                 self._scan('"or"', context=_context)
             expr_a = self.expr_a(_context)
+        return ("TODO","lapergunta")
 
     def boolean_expression(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'boolean_expression', [])
         identifier = self._scan('identifier', context=_context)
         relational_op = self.relational_op(_context)
         identifier = self._scan('identifier', context=_context)
+        return ("TODO","lapergunta")
 
     def l_value_decoration(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'l_value_decoration', [])
-        _token = self._peek('"&"', '"["', context=_context)
+        _token = self._peek('"&"', '"\\["', context=_context)
         if _token == '"&"':
             self._scan('"&"', context=_context)
-        else: # == '"["'
-            self._scan('"["', context=_context)
+        else: # == '"\\["'
+            self._scan('"\\["', context=_context)
             expression = self.expression(_context)
-            self._scan('"]"', context=_context)
+            self._scan('"\\]"', context=_context)
+            return ("TODO","lapergunta")
 
     def l_value(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'l_value', [])
         identifier = self._scan('identifier', context=_context)
-        while self._peek('"&"', '"["', '":="', context=_context) != '":="':
+        while self._peek('"&"', '"\\["', '":="', context=_context) != '":="':
             l_value_decoration = self.l_value_decoration(_context)
+        return ("TODO","lapergunta")
 
     def io_statement(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'io_statement', [])
@@ -271,6 +305,7 @@ class LED(runtime.Parser):
         else: # == '"output"'
             self._scan('"output"', context=_context)
         identifier_list = self.identifier_list(_context)
+        return ("TODO","lapergunta")
 
     def if_statement(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'if_statement', [])
@@ -280,6 +315,7 @@ class LED(runtime.Parser):
         while self._peek('"end"', '"input"', '"output"', '"if"', '"while"', 'identifier', '"var"', context=_context) != '"end"':
             statement = self.statement(_context)
         self._scan('"end"', context=_context)
+        return ("TODO","lapergunta")
 
     def while_statement(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'while_statement', [])
@@ -289,12 +325,14 @@ class LED(runtime.Parser):
         while self._peek('"end"', '"input"', '"output"', '"if"', '"while"', 'identifier', '"var"', context=_context) != '"end"':
             statement = self.statement(_context)
         self._scan('"end"', context=_context)
+        return ("TODO","lapergunta")
 
     def assignment(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'assignment', [])
         l_value = self.l_value(_context)
         self._scan('":="', context=_context)
         expression = self.expression(_context)
+        return ("TODO","lapergunta")
 
     def declaration(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'declaration', [])
@@ -302,28 +340,41 @@ class LED(runtime.Parser):
         identifier_list = self.identifier_list(_context)
         self._scan('":"', context=_context)
         type_expression = self.type_expression(_context)
-        self._scan('":="', context=_context)
-        expression = self.expression(_context)
+        if self._peek('":="', '","', '":"', '"\\)"', '"\\]"', '" \\]"', '";"', '"}"', context=_context) == '":="':
+            self._scan('":="', context=_context)
+            expression = self.expression(_context)
+        return (type_expression, identifier_list)
 
     def statement(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'statement', [])
         _token = self._peek('"input"', '"output"', '"if"', '"while"', 'identifier', '"var"', context=_context)
         if _token in ['"input"', '"output"']:
             io_statement = self.io_statement(_context)
+            self._scan('";"', context=_context)
+            return ("io_statement","TODO")
         elif _token == '"if"':
             if_statement = self.if_statement(_context)
+            self._scan('";"', context=_context)
+            return ("if_statement","TODO")
         elif _token == '"while"':
             while_statement = self.while_statement(_context)
+            self._scan('";"', context=_context)
+            return ("while_statement","TODO")
         elif _token == 'identifier':
             assignment = self.assignment(_context)
+            self._scan('";"', context=_context)
+            return ("assignment","TODO")
         else: # == '"var"'
             declaration = self.declaration(_context)
-        self._scan('";"', context=_context)
+            self._scan('";"', context=_context)
+            return ("declaration", declaration)
 
     def program(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'program', [])
-        while self._peek('"input"', '"output"', '"if"', '"while"', 'identifier', '"var"', '"end"', context=_context) != '"end"':
-            statement = self.statement(_context)
+        e = []
+        statement = self.statement(_context)
+        e.append(statement)
+        return e
 
 
 def parse(rule, text):
