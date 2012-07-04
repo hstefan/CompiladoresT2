@@ -1,0 +1,49 @@
+// a, b : int;
+// in : char;
+//
+// x : auto = 30;
+//
+// input a, b, c;
+//
+// if a > b then
+//     i := b;
+// end;
+//
+// output a, b, max;
+
+@@skip := "(?:\s*(?://[^\n]*\n)?)*" ;
+@identifier := "([a-zA-Z_][a-zA-Z0-9_]*)" ;
+@int-literal := "([0-9]+)" ;
+@real-literal := "([0-9]+\.[0-9]+)" ;
+@char-literal := "'(.)'" ;
+@string-literal := "\"([^\"]*)\"" ;
+
+identifier-list := @identifier => ( ',' => @identifier )* ;
+
+generic := '[' => type-expression => ']' ;
+basic-type := 'int' | 'real' | 'char' | 'bool' | 'string' | 'list' => generic | 'map' => generic => generic;
+type-decoration := '&' | ( '[' => @int-literal => ']' ) ;
+type-expression := basic-type => type-decoration* ;
+
+bool-literal := 'true' | 'false' ;
+list-literal := '[' => ( expression => ( ',' => expression )* )? => ']' ;
+map-entry := expression => ':' => expression ;
+map-literal := '{' => ( map-entry => ( ',' => map-entry )* )? => '}' ;
+
+value := @identifier | @real-literal | @char-literal | bool-literal | @string-literal | list-literal | map-literal ;
+expr-e := value | '(' => expression => ')' ;
+expr-d := 'not'? => '&'? => expr-e ;
+expr-c := expr-d => ( ( '*' | '/' | '%' ) => expr-d )* ;
+expr-b := expr-c => ( ( '+' | '-' ) => expr-c )* ;
+relational-op := '==' | '!=' | '<' | '<=' | '>' | '>=' ;
+expr-a := expr-b => ( relational-op => expr-b )* ;
+expression := expr-a => ( ( 'and' | 'or' ) => expr-a )* ;
+
+io-statement := ( 'input' | 'output' ) => identifier-list ;
+if-statement := 'if' => boolean-expression => 'then' => statement* => 'end' ;
+while-statement := 'while' => boolean-expression => 'do' => statement* => 'end' ;
+assignment := l-value => ':=' => expression ;
+declaration := 'var' => identifier-list => ':' => type-expression => ( ':=' => expression ) ;
+
+statement := ( io-statement | if-statement | while-statement | assignment | declaration ) => ';' ;
+#program := statement* ;
