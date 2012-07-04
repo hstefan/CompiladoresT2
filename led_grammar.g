@@ -9,11 +9,11 @@ def basic_type_node():
 def type_decoration_node():
     pass
 def type_expression_node():
-    pass 
+    pass
 def bool_literal_node():
-    pass 
+    pass
 def list_literal_node():
-    pass 
+    pass
 def map_entry_node():
     pass
 def map_literal_node():
@@ -52,7 +52,7 @@ def declaration_node():
     pass
 def statement_node():
     pass
-    
+
 ################YAPP grammar###############
 
 parser LED:
@@ -62,7 +62,7 @@ parser LED:
 	token real_literal: "([0-9]+\.[0-9]+)"
 	token char_literal: "'(.)'"
 	token string_literal: "\"([^\"]*)\""
-    
+
 	rule identifier_list: identifier ( "," identifier )*                                                  {{return (identifier)}}
 
 	rule generic: "\[" type_expression "\]"                                                               {{return ("TODO","lapergunta")}}
@@ -74,12 +74,12 @@ parser LED:
 	| "list" generic            {{return "listTODO"}}
 	| "map" generic generic     {{return "mapTODO"}}
 	rule type_decoration: "&"   {{return ("&TODO")}}
-	| ( "\[" int_literal "\]" ) {{return ("type","decorationTODO")}}        
+	| ( "\[" int_literal "\]" ) {{return ("type","decorationTODO")}}
 	rule type_expression: basic_type type_decoration*     {{return basic_type}}
 
 	rule bool_literal: "true" {{return ("bool_literal", "true")}}
 					| "false" {{return ("bool_literal", "false")}}
-					
+
 	rule list_literal: "\[" ( expression [("," expression)*] ) " \]"                                      {{return ("TODO","lapergunta")}}
 	rule map_entry: expression ":" expression                                                             {{return ("TODO","lapergunta")}}
 	rule map_literal: "{" [ map_entry ("," map_entry )* ] "}"                                             {{return ("TODO","lapergunta")}}
@@ -90,8 +90,8 @@ parser LED:
 	| bool_literal {{return ("TODO","lapergunta")}}
 	| string_literal {{return ("TODO","lapergunta")}}
 	| list_literal {{return ("TODO","lapergunta")}}
-	| map_literal   {{return ("TODO","lapergunta")}} 
-	
+	| map_literal   {{return ("TODO","lapergunta")}}
+
 	rule expr_e: value | "\(" expression "\)"    {{return ("TODO","lapergunta")}}
 	rule expr_d: ["not"] ["&"] expr_e [ "\[" expression "\]" ] {{return ("TODO","lapergunta")}}
 	rule expr_c: expr_d ( ( "\*" | "/" | "%" ) expr_d )*       {{return ("TODO","lapergunta")}}
@@ -99,15 +99,14 @@ parser LED:
 	rule relational_op: "==" | "!=" | "<" | "<=" | ">" | ">="  {{return ("TODO","lapergunta")}}
 	rule expr_a: expr_b (relational_op expr_b )*               {{return ("TODO","lapergunta")}}
 	rule expression: expr_a ( ( "and" | "or" )  expr_a )*      {{return ("TODO","lapergunta")}}
-	
+
     rule boolean_expression: (identifier relational_op identifier) {{return ("TODO","lapergunta")}}
     rule l_value_decoration: "&" | ( "\[" expression "\]" )  {{return ("TODO","lapergunta")}}
-    rule l_value: identifier l_value_decoration*    {{return ("TODO","lapergunta")}}
-    rule io_statement: ( "input" | "output" ) identifier_list                      {{return ("TODO","lapergunta")}}
+    rule l_value: identifier l_value_decoration*    {{return ("TODO","lapergunta")}}    rule io_statement: ( "input" | "output" ) identifier_list                      {{return ("TODO","lapergunta")}}
 	rule if_statement: "if" boolean_expression "then" statement* "end"             {{return ("TODO","lapergunta")}}
 	rule while_statement: "while" boolean_expression "do" statement* "end"         {{return ("TODO","lapergunta")}}
 	rule assignment: l_value ":=" expression                                       {{return ("TODO","lapergunta")}}
-	rule declaration: "var" identifier_list ":" type_expression [":=" expression] {{return (type_expression, identifier_list) }}  
+	rule declaration: "var" identifier_list ":" type_expression [":=" expression] {{return (type_expression, identifier_list) }}
 
 	rule statement: ( io_statement ) ";"  {{return ("io_statement","TODO")}}
                   | ( if_statement ) ";" {{return ("if_statement","TODO")}}
@@ -116,7 +115,8 @@ parser LED:
 				  | ( declaration ) ";" {{return ("declaration", declaration)}}
 
 
-	rule program:  
+	rule program:
                              {{e = [] }}
 				   statement {{ e.append(statement) }}
 				             {{return e }}
+
