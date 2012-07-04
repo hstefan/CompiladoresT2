@@ -32,12 +32,15 @@ map-literal := '{' => ( map-entry => ( ',' => map-entry )* )? => '}' ;
 
 value := @identifier | @real-literal | @char-literal | bool-literal | @string-literal | list-literal | map-literal ;
 expr-e := value | '(' => expression => ')' ;
-expr-d := 'not'? => '&'? => expr-e ;
+expr-d := 'not'? => '&'? => expr-e => ( '[' => expression => ']' )? ;
 expr-c := expr-d => ( ( '*' | '/' | '%' ) => expr-d )* ;
 expr-b := expr-c => ( ( '+' | '-' ) => expr-c )* ;
 relational-op := '==' | '!=' | '<' | '<=' | '>' | '>=' ;
 expr-a := expr-b => ( relational-op => expr-b )* ;
 expression := expr-a => ( ( 'and' | 'or' ) => expr-a )* ;
+
+l-value-decoration := '&' | ( '[' => expression => ']' ) ;
+l-value := @identifier => l-value-decoration* ;
 
 io-statement := ( 'input' | 'output' ) => identifier-list ;
 if-statement := 'if' => boolean-expression => 'then' => statement* => 'end' ;
