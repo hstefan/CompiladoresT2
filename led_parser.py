@@ -131,13 +131,17 @@ def parse_program(token_iter):
 def create_lexer():
     tokens_info = {
         "@@skip" : r"(?:\s*(?://[^\n]*\n)?)*",
-        "@token-id" : r"(@@?[a-z]+(?:-[a-z]+)*)",
-        "@rule-id" : r"(#?[a-z]+(?:-[a-z]+)*)",
-        "@token-literal" : r"'((?:\\.|[^'\n])+)'",
-        "@token-match" : '"' + r"((?:\\.|[^\"\n])+)" + '"'
+        "@identifier" : r"([a-zA-Z_][a-zA-Z0-9_]*)",
+        "@int-literal" : r"([0-9]+)",
+        "@real-literal" : r"([0-9]+\.[0-9]+)",
+        "@char-literal" : r"'(.)'",
+        "@string-literal" : '"' + r"([^\"]*)" + '"'
     }
 
-    literals = [':=', '(', ')', '?', '*', '=>', '|', ';']
+    literals = ['int', 'real', 'char', 'bool', 'string', 'list', 'map', '&', '[', ']',
+            'true', 'false', '{', '}', '(', ')', 'not', '*', '/', '%', '+', '-', '==',
+            '!=', '<', '<=', '>', '>=', 'and', 'or', 'input', 'output', 'if', 'then',
+            'else', 'end', 'while', 'do', ':=', 'var', ':', ';']
     lexer.add_literal_tokens(tokens_info, literals)
 
     return lexer.Tokenizer(tokens_info)
