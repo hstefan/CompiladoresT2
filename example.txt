@@ -1,0 +1,5 @@
+var a : int := 0;
+if a == 0 then 
+    var b : int; 
+end;
+    
