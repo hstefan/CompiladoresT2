@@ -59,27 +59,27 @@ class Expression(Node):
 
 class BinaryOp(Expression):
     def __init__(self, op_type, arg_a, arg_b):
+		super.__init__()
         self.op_type = op_type # str
         self.arg_a = arg_a # Expression
         self.arg_b = arg_b # Expression
-		super.__init__()
 
 class UnaryOp(Expression):
     def __init__(self, op_type, arg):
+		super.__init__()
         self.op_type = op_type # str
         self.arg = arg # Expression
-		super.__init__()
 
 class Literal(Expression):
     def __init__(self, value, type_):
+		super.__init__()
         self.value = value
         self.type_ = type_ # Enum in BasicType
-		super.__init__()
 
 class Variable(Expression):
     def __init__(self, identifier):
-        self.identifier = identifier # str
 		super.__init__()
+        self.identifier = identifier # str
 
 ### Statements ############################################
 
