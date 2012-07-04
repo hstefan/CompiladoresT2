@@ -26,28 +26,31 @@ type-decoration := '&' | ( '[' => @int-literal => ']' ) ;
 type-expression := basic-type => type-decoration* ;
 
 bool-literal := 'true' | 'false' ;
-list-literal := '[' => ( expression => ( ',' => expression )* )? => ']' ;
+list-literal := '[' => expression-list? => ']' ;
 map-entry := expression => ':' => expression ;
-map-literal := '{' => ( map-entry => ( ',' => map-entry )* )? => '}' ;
+map-entry-list := map-entry => ( ',' => map-entry )* ;
+map-literal := '{' => map-entry-list? => '}' ;
 
 value := @identifier | @real-literal | @char-literal | bool-literal | @string-literal | list-literal | map-literal ;
 expr-e := value | '(' => expression => ')' ;
-expr-d := 'not'? => '&'? => expr-e => ( '[' => expression => ']' )? ;
+expr-d := 'not'? => expr-e => l-value-decoration* ;
 expr-c := expr-d => ( ( '*' | '/' | '%' ) => expr-d )* ;
 expr-b := expr-c => ( ( '+' | '-' ) => expr-c )* ;
 relational-op := '==' | '!=' | '<' | '<=' | '>' | '>=' ;
 expr-a := expr-b => ( relational-op => expr-b )* ;
 expression := expr-a => ( ( 'and' | 'or' ) => expr-a )* ;
+expression-list := expression => ( ',' => expression )* ;
 
 l-value-decoration := '&' | ( '[' => expression => ']' ) ;
 l-value := @identifier => l-value-decoration* ;
 l-value-list := l-value => ( ',' => l-value )* ;
 
-io-statement := ( 'input' | 'output' ) => l-value-list ;
+input-statement := 'input' => l-value-list ;
+output-statement := 'output' => expression-list ;
 if-statement := 'if' => expression => 'then' => statement* => ( 'else' => statement* )? => 'end' ;
 while-statement := 'while' => expression => 'do' => statement* => 'end' ;
 assignment := l-value => ':=' => expression ;
 declaration := 'var' => identifier-list => ':' => type-expression => ( ':=' => expression ) ;
 
-statement := ( io-statement | if-statement | while-statement | assignment | declaration ) => ';' ;
+statement := ( input-statement | output-statement | if-statement | while-statement | assignment | declaration ) => ';' ;
 #program := statement* ;
