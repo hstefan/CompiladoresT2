@@ -2,7 +2,7 @@
 #
 # This module is needed to run generated parsers.
 
-#from string import join, count, find, rfind
+#from string import count, find, rfind
 import re
 
 class SyntaxError(Exception):
@@ -59,47 +59,47 @@ class Scanner:
             output = '%s\n  (@%s)  %s  =  %s' % (output,t[0],t[2],repr(t[3]))
         return output
         
-        def scan(self, restrict):
-            """Should scan another token and add it to the list, self.tokens,
-            and add the restriction to self.restrictions"""
-            # Keep looking for a token, ignoring any in self.ignore
-            while 1:
-                # Search the patterns for the longest match, with earlier
-                # tokens in the list having preference
-                best_match = -1
-                best_pat = '(error)'
-                for p, regexp in self.patterns:
-                # First check to see if we're ignoring this token
-                    if restrict and p not in restrict and p not in self.ignore:
-                        continue
-                    m = regexp.match(self.input, self.pos)
-                    if m and len(m.group(0)) > best_match:
-                        # We got a match that's better than the previous one
-                        best_pat = p
-                        best_match = len(m.group(0))
-                    
-                # If we didn't find anything, raise an error
-                if best_pat == '(error)' and best_match < 0:
-                    msg = "Bad Token"
-                if restrict:
-                    msg = "Trying to find one of "+join(restrict,", ")
-                raise SyntaxError(self.pos, msg)
+    def scan(self, restrict):
+        """Should scan another token and add it to the list, self.tokens,
+        and add the restriction to self.restrictions"""
+        # Keep looking for a token, ignoring any in self.ignore
+        while 1:
+            # Search the patterns for the longest match, with earlier
+            # tokens in the list having preference
+            best_match = -1
+            best_pat = '(error)'
+            for p, regexp in self.patterns:
+            # First check to see if we're ignoring this token
+                if restrict and p not in restrict and p not in self.ignore:
+                    continue
+                m = regexp.match(self.input, self.pos)
+                if m and len(m.group(0)) > best_match:
+                    # We got a match that's better than the previous one
+                    best_pat = p
+                    best_match = len(m.group(0))
+                
+            # If we didn't find anything, raise an error
+            if best_pat == '(error)' and best_match < 0:
+                msg = "Bad Token"
+            if restrict:
+                msg = "Trying to find one of " + ", ".join(restrict)
+            raise SyntaxError(self.pos, msg)
 
-                # If we found something that isn't to be ignored, return it
-                if best_pat not in self.ignore:
-                    # Create a token with this data
-                    token = (self.pos, self.pos+best_match, best_pat,
-                         self.input[self.pos:self.pos+best_match])
-                    self.pos = self.pos + best_match
-                    # Only add this token if it's not in the list
-                    # (to prevent looping)
-                    if not self.tokens or token != self.tokens[-1]:
-                        self.tokens.append(token)
-                        self.restrictions.append(restrict)
-                        return
-                else:
-                    # This token should be ignored ..
-                    self.pos = self.pos + best_match
+            # If we found something that isn't to be ignored, return it
+            if best_pat not in self.ignore:
+                # Create a token with this data
+                token = (self.pos, self.pos+best_match, best_pat,
+                     self.input[self.pos:self.pos+best_match])
+                self.pos = self.pos + best_match
+                # Only add this token if it's not in the list
+                # (to prevent looping)
+                if not self.tokens or token != self.tokens[-1]:
+                    self.tokens.append(token)
+                    self.restrictions.append(restrict)
+                    return
+            else:
+                # This token should be ignored ..
+                self.pos = self.pos + best_match
 
 class Parser:
     def __init__(self, scanner):
@@ -120,29 +120,27 @@ class Parser:
         self._pos = 1+self._pos
         return tok[3]
 
-
-
 def print_error(input, err, scanner):
     """This is a really dumb long function to print error messages nicely."""
     p = err.pos
     # Figure out the line number
-    line = count(input[:p], '\n')
+    line = input[:p].count('\n')
     print(err.msg+" on line "+repr(line+1)+":")
     # Now try printing part of the line
     text = input[max(p-80, 0):p+80]
     p = p - max(p-80, 0)
 
     # Strip to the left
-    i = rfind(text[:p], '\n')
-    j = rfind(text[:p], '\r')
+    i = text[:p].rfind('\n')
+    j = text[:p].rfind('\r')
     if i < 0 or (0 <= j < i): i = j
     if 0 <= i < p:
         p = p - i - 1
         text = text[i+1:]
 
     # Strip to the right
-    i = find(text,'\n', p)
-    j = find(text,'\r', p)
+    i = text.find('\n', p)
+    j = text.find('\r', p)
     if i < 0 or (0 <= j < i): i = j
     if i >= 0:
         text = text[:i]
@@ -161,6 +159,7 @@ def print_error(input, err, scanner):
 def wrap_error_reporter(parser, rule):
     try:
         return_value = getattr(parser, rule)()
+        return return_value
     except SyntaxError as s:
         input = parser._scanner.input
         try:
@@ -170,4 +169,3 @@ def wrap_error_reporter(parser, rule):
     except NoMoreTokens:
         print('Could not complete parsing; stopped around here:')
         print(parser._scanner)
-    return return_value
