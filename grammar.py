@@ -33,6 +33,7 @@ class LEDScanner(Scanner):
         ('"}"', re.compile('}')),
         ('"{"', re.compile('{')),
         ('":"', re.compile(':')),
+        ('" ]"', re.compile(' ]')),
         ('"false"', re.compile('false')),
         ('"true"', re.compile('true')),
         ('"&"', re.compile('&')),
@@ -59,7 +60,7 @@ class LEDScanner(Scanner):
 class LED(Parser):
     def identifier_list(self):
         identifier = self._scan('identifier')
-        while self._peek('","', '":"', '"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '";"', '")"', '"]"', '":="', '"}"') == '","':
+        while self._peek('","', '":"', '"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '";"', '")"', '"]"', '" ]"', '"}"') == '","':
             self._scan('","')
             identifier = self._scan('identifier')
 
@@ -112,10 +113,11 @@ class LED(Parser):
     def list_literal(self):
         self._scan('"["')
         expression = self.expression()
-        while self._peek('","', '"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '"]"', '":"', '")"', '":="', '";"', '"}"') == '","':
-            self._scan('","')
-            expression = self.expression()
-        self._scan('"]"')
+        if 1:
+            while self._peek('","', '"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '":"', '")"', '"]"', '" ]"', '";"', '"}"') == '","':
+                self._scan('","')
+                expression = self.expression()
+        self._scan('" ]"')
 
     def map_entry(self):
         expression = self.expression()
@@ -124,10 +126,11 @@ class LED(Parser):
 
     def map_literal(self):
         self._scan('"{"')
-        map_entry = self.map_entry()
-        while self._peek('","', '"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '":"', '"}"', '")"', '"]"', '":="', '";"') == '","':
-            self._scan('","')
+        if self._peek('","', '"}"', '"not"', '"&"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', '"("', '"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '":"', '")"', '"]"', '" ]"', '";"') in ['"not"', '"&"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', '"("']:
             map_entry = self.map_entry()
+            while self._peek('","', '"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '":"', '")"', '"]"', '"}"', '" ]"', '";"') == '","':
+                self._scan('","')
+                map_entry = self.map_entry()
         self._scan('"}"')
 
     def value(self):
@@ -162,10 +165,14 @@ class LED(Parser):
         if self._peek('"&"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', '"("') == '"&"':
             self._scan('"&"')
         expr_e = self.expr_e()
+        if self._peek('"["', '"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '")"', '"]"', '" ]"', '";"', '"}"') == '"["':
+            self._scan('"["')
+            expression = self.expression()
+            self._scan('"]"')
 
     def expr_c(self):
         expr_d = self.expr_d()
-        while self._peek('"*"', '"/"', '"%"', '"+"', '"-"', '":="', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '")"', '"]"', '";"', '"}"') in ['"*"', '"/"', '"%"']:
+        while self._peek('"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '")"', '"]"', '" ]"', '";"', '"}"') in ['"*"', '"/"', '"%"']:
             _token_ = self._peek('"*"', '"/"', '"%"')
             if _token_ == '"*"':
                 self._scan('"*"')
@@ -177,7 +184,7 @@ class LED(Parser):
 
     def expr_b(self):
         expr_c = self.expr_c()
-        while self._peek('"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '":="', '"and"', '"or"', '","', '":"', '")"', '"]"', '";"', '"}"') in ['"+"', '"-"']:
+        while self._peek('"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '")"', '"]"', '" ]"', '";"', '"}"') in ['"+"', '"-"']:
             _token_ = self._peek('"+"', '"-"')
             if _token_ == '"+"':
                 self._scan('"+"')
@@ -202,13 +209,13 @@ class LED(Parser):
 
     def expr_a(self):
         expr_b = self.expr_b()
-        while self._peek('"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '":="', '","', '":"', '")"', '"]"', '";"', '"}"') in ['"=="', '"!="', '"<"', '"<="', '">"', '">="']:
+        while self._peek('"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '")"', '"]"', '" ]"', '";"', '"}"') in ['"=="', '"!="', '"<"', '"<="', '">"', '">="']:
             relational_op = self.relational_op()
             expr_b = self.expr_b()
 
     def expression(self):
         expr_a = self.expr_a()
-        while self._peek('"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '")"', '":="', '"]"', '";"', '"}"') in ['"and"', '"or"']:
+        while self._peek('"*"', '"/"', '"%"', '"+"', '"-"', '"=="', '"!="', '"<"', '"<="', '">"', '">="', '"and"', '"or"', '","', '":"', '")"', '"]"', '" ]"', '";"', '"}"') in ['"and"', '"or"']:
             _token_ = self._peek('"and"', '"or"')
             if _token_ == '"and"':
                 self._scan('"and"')
@@ -221,8 +228,19 @@ class LED(Parser):
         relational_op = self.relational_op()
         identifier = self._scan('identifier')
 
+    def l_value_decoration(self):
+        _token_ = self._peek('"&"', '"["')
+        if _token_ == '"&"':
+            self._scan('"&"')
+        else:# == '"["'
+            self._scan('"["')
+            expression = self.expression()
+            self._scan('"]"')
+
     def l_value(self):
-        value = self.value()
+        identifier = self._scan('identifier')
+        while self._peek('"&"', '"["', '":="') != '":="':
+            l_value_decoration = self.l_value_decoration()
 
     def io_statement(self):
         _token_ = self._peek('"input"', '"output"')
@@ -236,7 +254,7 @@ class LED(Parser):
         self._scan('"if"')
         boolean_expression = self.boolean_expression()
         self._scan('"then"')
-        while self._peek('"end"', '"input"', '"output"', '"if"', '"while"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', '"var"') != '"end"':
+        while self._peek('"end"', '"input"', '"output"', '"if"', '"while"', 'identifier', '"var"') != '"end"':
             statement = self.statement()
         self._scan('"end"')
 
@@ -244,7 +262,7 @@ class LED(Parser):
         self._scan('"while"')
         boolean_expression = self.boolean_expression()
         self._scan('"do"')
-        while self._peek('"end"', '"input"', '"output"', '"if"', '"while"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', '"var"') != '"end"':
+        while self._peek('"end"', '"input"', '"output"', '"if"', '"while"', 'identifier', '"var"') != '"end"':
             statement = self.statement()
         self._scan('"end"')
 
@@ -262,21 +280,21 @@ class LED(Parser):
         expression = self.expression()
 
     def statement(self):
-        _token_ = self._peek('"input"', '"output"', '"if"', '"while"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', '"var"')
+        _token_ = self._peek('"input"', '"output"', '"if"', '"while"', 'identifier', '"var"')
         if _token_ in ['"input"', '"output"']:
             io_statement = self.io_statement()
         elif _token_ == '"if"':
             if_statement = self.if_statement()
         elif _token_ == '"while"':
             while_statement = self.while_statement()
-        elif _token_ != '"var"':
+        elif _token_ == 'identifier':
             assignment = self.assignment()
         else:# == '"var"'
             declaration = self.declaration()
         self._scan('";"')
 
     def program(self):
-        while self._peek('"input"', '"output"', '"if"', '"while"', 'identifier', 'real_literal', 'char_literal', '"true"', '"false"', 'string_literal', '"["', '"{"', '"var"', '"end"') != '"end"':
+        while self._peek('"input"', '"output"', '"if"', '"while"', 'identifier', '"var"', '"end"') != '"end"':
             statement = self.statement()
 
 

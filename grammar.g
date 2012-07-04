@@ -14,20 +14,21 @@ parser LED:
 	rule type_expression: basic_type type_decoration*
 
 	rule bool_literal: "true" | "false"
-	rule list_literal: "[" ( expression ("," expression)* ) "]"
+	rule list_literal: "[" ( expression [("," expression)*] ) " ]"
 	rule map_entry: expression ":" expression
-	rule map_literal: "{" ( map_entry ( "," map_entry )* ) "}"
+	rule map_literal: "{" [ map_entry ("," map_entry )* ] "}"
 
 	rule value: identifier | real_literal | char_literal | bool_literal | string_literal | list_literal | map_literal
 	rule expr_e: value | "(" expression ")"
-	rule expr_d: ["not"] ["&"] expr_e
+	rule expr_d: ["not"] ["&"] expr_e [ "[" expression "]" ]
 	rule expr_c: expr_d ( ( "*" | "/" | "%" ) expr_d )*
 	rule expr_b: expr_c ( ( "+" | "-" ) expr_c )*
 	rule relational_op: "==" | "!=" | "<" | "<=" | ">" | ">="
 	rule expr_a: expr_b (relational_op expr_b )*
 	rule expression: expr_a ( ( "and" | "or" )  expr_a )*
     rule boolean_expression: (identifier relational_op identifier)
-    rule l_value: value 
+    rule l_value_decoration: "&" | ( "[" expression "]" ) 
+    rule l_value: identifier l_value_decoration*
     
     rule io_statement: ( "input" | "output" ) identifier_list
 	rule if_statement: "if" boolean_expression "then" statement* "end"
@@ -37,5 +38,4 @@ parser LED:
 
 	rule statement: ( io_statement | if_statement | while_statement | assignment | declaration ) ";"
 
-    
 	rule program: statement*
