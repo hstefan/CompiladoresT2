@@ -54,7 +54,7 @@ class LValueVariable(LValue):
 ### Expressions ###########################################
 
 class Expression(Node):
-    pass
+	type_ = None
 
 class BinaryOp(Expression):
     def __init__(self, op_type, arg_a, arg_b):
