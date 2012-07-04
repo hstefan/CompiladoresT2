@@ -86,13 +86,13 @@ class Variable(Expression):
 class Statement(Node):
     pass
 
-class IOStatement(Statement):
-    INPUT = 0
-    OUTPUT = 1
+class InputStatement(Statement):
+    def __init__(self, target_list):
+        self.target_list = target_list # [LValue]
 
-    def __init__(self, io_type, target_list):
-        self.io_type = io_type # INPUT or OUTPUT
-        self.target_list = target_list # [LValue] if INPUT, [Expression] if OUTPUT
+class OutputStatement(Statement):
+    def __init__(self, target_list):
+        self.target_list = target_list # [Expression]
 
 class IfStatement(Statement):
     def __init__(self, condition, then_body, else_body):
