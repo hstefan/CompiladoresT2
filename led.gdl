@@ -41,10 +41,11 @@ expression := expr-a => ( ( 'and' | 'or' ) => expr-a )* ;
 
 l-value-decoration := '&' | ( '[' => expression => ']' ) ;
 l-value := @identifier => l-value-decoration* ;
+l-value-list := l-value => ( ',' => l-value )* ;
 
-io-statement := ( 'input' | 'output' ) => identifier-list ;
-if-statement := 'if' => boolean-expression => 'then' => statement* => 'end' ;
-while-statement := 'while' => boolean-expression => 'do' => statement* => 'end' ;
+io-statement := ( 'input' | 'output' ) => l-value-list ;
+if-statement := 'if' => expression => 'then' => statement* => ( 'else' => statement* )? => 'end' ;
+while-statement := 'while' => expression => 'do' => statement* => 'end' ;
 assignment := l-value => ':=' => expression ;
 declaration := 'var' => identifier-list => ':' => type-expression => ( ':=' => expression ) ;
 
