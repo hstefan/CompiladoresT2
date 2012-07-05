@@ -44,4 +44,6 @@ def type_size(type_node):
         return 8 #ptr size
     elif isinstance(type_node, ast.TypeArray):
         return type_size(type_node.subtype * type_node.size)
+    elif isinstance(type_node, int):
+        return sz_table[type_node]
 
