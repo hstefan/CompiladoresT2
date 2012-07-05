@@ -7,13 +7,15 @@ class InferenceError(Exception):
 class Placeholder:
     def __init__(self):
         self.placed = False
+
     def __eq__(self, other):
         if self.placed:
             return other == self.model
         else:
             self.model = other
-            self.placed = False
+            self.placed = True
             return True
+
     def reset(self):
         self.placed = False
         self.model = None
@@ -27,7 +29,8 @@ class Any:
 class PlaceholderAny:
     def __init__(self, *args):
         self.args = args
-        self.placed = True
+        self.placed = False
+
     def __eq__(self, other):
         if self.placed:
             return other == self.model
@@ -38,6 +41,7 @@ class PlaceholderAny:
                 return True
             else:
                 return False
+
     def reset(self):
         self.placed = False
         self.model = None
