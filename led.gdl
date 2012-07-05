@@ -50,7 +50,7 @@ output-statement := 'output' => expression-list ;
 if-statement := 'if' => expression => 'then' => statement* => ( 'else' => statement* )? => 'end' ;
 while-statement := 'while' => expression => 'do' => statement* => 'end' ;
 assignment := l-value => ':=' => expression ;
-declaration := 'var' => identifier-list => ':' => type-expression => ( ':=' => expression ) ;
+declaration := 'var' => identifier-list => ':' => type-expression => ( ':=' => expression )? ;
 
 statement := ( input-statement | output-statement | if-statement | while-statement | assignment | declaration ) => ';' ;
 #program := statement* ;
