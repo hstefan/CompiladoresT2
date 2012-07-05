@@ -3,7 +3,6 @@ import ast
 class EmitContext:
     def __init__(self):
         self.instructions = []
-        self.stack = []
         self.next_tmp = 0
 
     def reserve_tmp(self):
@@ -44,7 +43,6 @@ def emit_expression(expr, ctx):
                 }
         short_type = get_short_type(expr.resolved_type)
 
-        #ctx.stack.push(emit_expression(expr.arg, ctx))
         arg = emit_expression(expr.arg, ctx)
 
         ctx.free_tmp(arg)
