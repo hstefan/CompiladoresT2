@@ -85,7 +85,20 @@ def infer_expression(expr_node, var_table):
         elif isinstance(expr_node, ast.Variable):
             expr_node.resolved_type = var_table[expr_node.identifier]
         elif isinstance(expr_node, ast.Literal):
-            expr_node.resolved_type = ast.BasicType(expr_node.type_)
+            if expr_node.type_ == ast.BasicType.LIST:
+                res_type = None
+                for expr in expr_node.value:
+                    if not res_type:
+                        res_type = infer_expression(expr, var_table)
+                    else:
+                        if infer_expression(expr, var_table) != res_type:
+                            raise InferenceError("List must have only one type.")
+                if not res_type:
+                    raise InferenceError("List literals must have at least one expression.")
+                else:
+                    expr_node.resolved_type = ast.BasicType(ast.BasicType.LIST, res_type)
+            else:
+                expr_node.resolved_type = ast.BasicType(expr_node.type_)
 
     return expr_node.resolved_type
 
