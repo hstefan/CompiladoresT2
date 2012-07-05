@@ -4,7 +4,7 @@ from collections import defaultdict
 op_table = []
 
 sz_table = {ast.BasicType.INT : 4, ast.BasicType.REAL : 4, ast.BasicType.CHAR : 1, ast.BasicType.BOOL : 1,
-        ast.BasicType.STRING : 8, ast.BasicType.LIST : 8, ast.BasicType.MAP : 8 }
+        ast.BasicType.STRING : 8, ast.BasicType.LIST : 8}
 
 class InferenceError(Exception):
     pass
@@ -37,6 +37,11 @@ def match_unary(arg, op):
     elif op_type == '&':
         return ast.TypeReference(arg)
 
-def type_size(type_):
-    return sz_table[type_]
+def type_size(type_node):
+    if isinstance(type_node, ast.BasicType):
+        return sz_table[type_node.type_]
+    elif isinstance(type_node, ast.TypeReference):
+        return 8 #ptr size
+    elif isinstance(type_node, ast.TypeArray):
+        return type_size(type_node.subtype * type_node.size)
 
