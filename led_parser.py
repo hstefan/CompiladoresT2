@@ -74,8 +74,7 @@ def parse_basic_type(tokens):
             '@$real': (ast.BasicType.CHAR, False),
             '@$bool': (ast.BasicType.BOOL, False),
             '@$string': (ast.BasicType.STRING, False),
-            '@$list': (ast.BasicType.LIST, True),
-            '@$map': (ast.BasicType.MAP, True)
+            '@$list': (ast.BasicType.LIST, True)
             }
 
     try:
@@ -107,35 +106,6 @@ def parse_type_expression(tokens):
         t, v = tokens.peek()
 
     return node
-
-def parse_map_literal(tokens):
-    tokens.expect('@${')
-
-    items = {}
-
-    t, v = tokens.peek()
-    if t == '@$}':
-        tokens.next()
-    else:
-        key = parse_expression(tokens)
-        tokens.expect('@$:')
-        value = parse_expression(tokens)
-        items[key] = value
-
-        t, v = tokens.peek()
-        while t == '@$,':
-            tokens.expect('@$,')
-
-            key = parse_expression(tokens)
-            tokens.expect('@$:')
-            value = parse_expression(tokens)
-            items[key] = value
-
-            t, v = tokens.peek()
-
-        tokens.expect('@$}')
-
-    return ast.Literal(items, ast.BasicType.MAP)
 
 def parse_list_literal(tokens):
     tokens.expect('@$[')
@@ -183,8 +153,6 @@ def parse_expr_e(tokens):
         node = ast.Literal(False, ast.BasicType.BOOL)
     elif t == '@$[':
         node = parse_list_literal(tokens)
-    elif t == '@${':
-        node = parse_map_literal(tokens)
     else:
         raise ParseError("Expected identifier or literal; got {0}.".format(t))
 
@@ -360,8 +328,8 @@ def parse_program(token_iter):
 def create_lexer():
     tokens_info = OrderedDict()
 
-    literals = {'int', 'real', 'char', 'bool', 'string', 'list', 'map', '&', '[', ']',
-            'true', 'false', '{', '}', '(', ')', 'not', '*', '/', '%', '+', '-', '==',
+    literals = {'int', 'real', 'char', 'bool', 'string', 'list', '&', '[', ']',
+            'true', 'false', '(', ')', 'not', '*', '/', '%', '+', '-', '==',
             '!=', '<', '<=', '>', '>=', 'and', 'or', 'input', 'output', 'if', 'then',
             'else', 'end', 'while', 'do', ':=', 'var', ':', ';'}
     lexer.add_literal_tokens(tokens_info, literals)

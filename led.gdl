@@ -21,17 +21,14 @@
 identifier-list := @identifier => ( ',' => @identifier )* ;
 
 generic := '<' => type-expression => '>' ;
-basic-type := 'int' | 'real' | 'char' | 'bool' | 'string' | 'list' => generic | 'map' => generic => generic;
+basic-type := 'int' | 'real' | 'char' | 'bool' | 'string' | 'list' => generic ;
 type-decoration := '&' | ( '[' => @int-literal => ']' ) ;
 type-expression := basic-type => type-decoration* ;
 
 bool-literal := 'true' | 'false' ;
 list-literal := '[' => expression-list? => ']' ;
-map-entry := expression => ':' => expression ;
-map-entry-list := map-entry => ( ',' => map-entry )* ;
-map-literal := '{' => map-entry-list? => '}' ;
 
-value := @identifier | @real-literal | @char-literal | bool-literal | @string-literal | list-literal | map-literal ;
+value := @identifier | @real-literal | @char-literal | bool-literal | @string-literal | list-literal ;
 expr-e := value | '(' => expression => ')' ;
 expr-d := 'not'? => expr-e => l-value-decoration* ;
 expr-c := expr-d => ( ( '*' | '/' | '%' ) => expr-d )* ;

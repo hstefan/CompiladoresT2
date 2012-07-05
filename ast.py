@@ -55,7 +55,6 @@ class BasicType(TypeExpression):
     BOOL = 3
     STRING = 4
     LIST = 5
-    MAP = 6
 
     def __init__(self, type_, generic=None):
         self.type_ = type_ # See enum above
@@ -64,8 +63,7 @@ class BasicType(TypeExpression):
     def __str__(self):
         #move along, nothing to see here
         return {BasicType.INT : 'int', BasicType.REAL : 'real', BasicType.CHAR : 'char',
-            BasicType.BOOL : 'bool', BasicType.STRING : 'string', BasicType.LIST : 'list',
-            BasicType.MAP : 'map'}[self.type_]
+            BasicType.BOOL : 'bool', BasicType.STRING : 'string', BasicType.LIST : 'list'}[self.type_]
 
     def accept(self, table):
         super().accept(table)
