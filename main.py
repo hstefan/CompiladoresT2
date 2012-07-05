@@ -4,6 +4,7 @@ import led_parser
 import symbolTable
 import ast
 import code_layout
+import type_inference
 from collections import defaultdict
 
 #initializes the command line argument parser
@@ -38,11 +39,19 @@ if __name__ == '__main__':
     d = defaultdict(lambda: null, {ast.Node: lambda x: symbol_table.buildSymbolTableNode(x)})
     root.accept(d)
 
+    d = defaultdict(lambda: null, {
+        ast.LValue: lambda x: type_inference.infer_lvalue(x, symbol_table.tabela_simbolos),
+        ast.Expression: lambda x: type_inference.infer_expression(x, symbol_table.tabela_simbolos)
+        })
+    root.accept(d)
+
     symbol_table.printSymbolTable()
 
     tuple_Blocks = code_layout.split_statement_list(root.statements)
 
     generated_code = code_layout.flatten_blocks(tuple_Blocks[0])
     for x in generated_code:
-        for command in x:
-            print(command)
+        s = ''
+        if (x[0] != '.'):
+            s = '    '
+        print(s+x)

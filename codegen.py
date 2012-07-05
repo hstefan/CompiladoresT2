@@ -107,7 +107,7 @@ def emit_statement(stmt, ctx):
         arg = emit_expression(stmt.value, ctx)
         emit_store(stmt.target, arg, ctx)
     elif isinstance(stmt, ast.ConditionCheck):
-        arg = emit_expression(expr, ctx)
+        arg = emit_expression(stmt.condition, ctx)
 
         ctx.free_tmp(arg)
         ctx.emit_instruction('test', (arg,))

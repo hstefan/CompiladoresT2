@@ -6,7 +6,7 @@ class BasicBlock:
         self.statements = []
         self.exit = None
         self.visited = False
-        self.label = -1
+        self.label = None
 
 def split_statement_list(statements):
     head_block = BasicBlock()
@@ -61,12 +61,15 @@ def codegen_block(block):
         codegen.emit_statement(stmt, ctx)
     block.statements = ctx.instructions
 
+next_label = 0
+
 def flatten_blocks(bBlock):
     flattened_blocks = []
     to_visit = [bBlock]
-    next_label = 0
 
     def get_label(b):
+        global next_label
+
         if b.label is None:
             b.label = next_label
             next_label += 1
@@ -80,17 +83,20 @@ def flatten_blocks(bBlock):
 
         codegen_block(current)
 
-        flattened_blocks.insert(0, '.L%3d' % get_label(current))
+        flattened_blocks.append('.L%03d' % get_label(current))
         flattened_blocks += current.statements
         if current.exit != None:
             if isinstance(current.exit, tuple):
                 true_exit, false_exit = current.exit
-                current.statements.append('jtrue .L%3d' % get_label(true_exit))
-                current.statements.append('jfalse .L%3d' % get_label(false_exit))
+                to_visit.append(true_exit)
+                to_visit.append(false_exit)
+                flattened_blocks.append('jtrue .L%03d' % get_label(true_exit))
+                flattened_blocks.append('jfalse .L%03d' % get_label(false_exit))
             else:
-                current.statements.append('jump .L%3d' % get_label(current.exit))
+                to_visit.append(current.exit)
+                flattened_blocks.append('jump .L%03d' % get_label(current.exit))
         else:
-            current.statements.append('halt')
+            flattened_blocks.append('halt')
     return flattened_blocks
 
 def tester_flatten_blocks():

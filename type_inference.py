@@ -57,7 +57,7 @@ placeholder = Placeholder()
 p_math = PlaceholderAny(ast.BasicType(ast.BasicType.INT), ast.BasicType(ast.BasicType.REAL))
 
 op_table = [
-        (placeholder, any_rel, placeholder, lambda: ast.BasicType.BOOL),
+        (placeholder, any_rel, placeholder, lambda: ast.BasicType(ast.BasicType.BOOL)),
         (p_math, any_math, p_math, lambda: p_math.model),
         (ast.BasicType(ast.BasicType.LIST), '+', placeholder, lambda: placeholder.model),
         (ast.BasicType(ast.BasicType.STRING), '+', Any(ast.BasicType(ast.BasicType.CHAR), ast.BasicType(ast.BasicType.STRING)),
@@ -71,6 +71,26 @@ def infer_type(expr_node, var_table):
     table = defaultdict(null, {ast.Expression : infer_expression})
     expr_node.accept(table)
 
+def infer_lvalue(expr_node, var_table):
+    if expr_node.resolved_type is None:
+        if isinstance(expr_node, ast.LValueDereference):
+            expr_node.resolved_type = infer_lvalue(expr_node.subexpr, var_table)
+        elif isinstance(expr_node, ast.LValueIndex):
+            sub_expr_t = infer_lvalue(expr_node.subexpr, var_table)
+            index_t = infer_lvalue(expr_node.index_expression, var_table)
+            if index_t.type_ != ast.BasicType.INT:
+                raise InferenceException("Index must be int.")
+            if isinstance(index_t, ast.BasicType):
+                if isinstance(sub_expr_t, ast.BasicType):
+                    if sub_expr_t.type_ == ast.BasicType.LIST:
+                        expr_node.resolved_type = infer_lvalue(sub_expr_t.generic, var_table)
+                elif isinstance(sub_expr_t, ast.TypeArray):
+                        expr_node.resolved_type = infer_lvalue(sub_expr_t.subtype, var_table)
+                else:
+                    raise InferenceException('Index lvalues are defined only for lists and arrays.')
+        elif isinstance(expr_node, ast.LValueVariable):
+            expr_node.resolved_type = var_table[expr_node.identifier][0]
+
 def infer_expression(expr_node, var_table):
     if expr_node.resolved_type is None:
         if isinstance(expr_node, ast.BinaryOp):
@@ -83,7 +103,7 @@ def infer_expression(expr_node, var_table):
                     infer_expression(expr_node.arg, var_table),
                     expr_node.op_type)
         elif isinstance(expr_node, ast.Variable):
-            expr_node.resolved_type = var_table[expr_node.identifier]
+            expr_node.resolved_type = var_table[expr_node.identifier][0]
         elif isinstance(expr_node, ast.Literal):
             if expr_node.type_ == ast.BasicType.LIST:
                 res_type = None
@@ -99,21 +119,6 @@ def infer_expression(expr_node, var_table):
                     expr_node.resolved_type = ast.BasicType(ast.BasicType.LIST, res_type)
             else:
                 expr_node.resolved_type = ast.BasicType(expr_node.type_)
-        elif isinstance(expr_node, ast.LValueDereference):
-            expr_node.resolved_type = infer_expression(expr_node.subexpr, var_table) 
-        elif isinstance(type_node, ast.LValueIndex):
-            sub_expr_t = infer_expression(expr_node.subexpr, var_table)
-            index_t = infer_expression(expr_node.index_expression, var_table)
-            if isinstance(index_t, ast.BasicType) and index_t.type == ast.BasicType.INT:
-                if isinstance(sub_expr_t, ast.BasicType):
-                    if sub_expr_t.type_ == ast.BasicType.LIST:
-                        type_node.resolved_type = infer_expression(sub_expr_t.generic, var_table)
-                elif isinstance(sub_expr_t, ast.TypeArray):
-                        type_node.resolved_type = infer_expression(sub_expr_t.subtype)   
-                else:
-                    raise InferenceException('Index lvalues are defined only for lists and arrays.')
-        elif isinstance(type_node, ast.LValueVariable):
-            type_node.resolved_type = var_table[type_node.identifier][0]
 
     return expr_node.resolved_type
 
