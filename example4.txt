@@ -1,0 +1,29 @@
+var a, b : int;
+
+a := 5;
+b := 2;
+
+
+var v : int[10];
+
+
+var p : list<list<real>>;
+
+if a < b then
+    var c : int;
+    while c < a do
+        c := c + b;
+    end;
+
+    a := c;
+    b := c;
+
+    v[0+2] := c + c * 2;
+    c := v[2];
+else
+    b := a;
+end;
+
+output a, b;
+a := 0;
+b := 0;

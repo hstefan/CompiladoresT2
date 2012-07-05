@@ -83,7 +83,7 @@ def emit_store(lvalue, source, ctx):
 
         ctx.free_tmp(index_arg)
         ctx.free_tmp(source)
-        ctx.emit_instruction('set.' + get_short_type(lvalue.resolved_type),
+        ctx.emit_instruction('set.array.' + get_short_type(lvalue.resolved_type),
                 ('%' + lvalue.subexpr.identifier, index_arg, source))
     else:
         raise CodegenError("Unsupported.")

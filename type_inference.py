@@ -65,7 +65,7 @@ op_table = [
         (ast.BasicType(ast.BasicType.BOOL), any_bool, ast.BasicType(ast.BasicType.BOOL), lambda: ast.BasicType(ast.BasicType.BOOL)),
         (ast.BasicType(ast.BasicType.INT), any_math, ast.BasicType(ast.BasicType.REAL), lambda: ast.BasicType(ast.BasicType.REAL)),
         (ast.BasicType(ast.BasicType.REAL), any_math, ast.BasicType(ast.BasicType.INT), lambda: ast.BasicType(ast.BasicType.REAL)),
-        (placeholder, '[]', ast.BasicType(ast.BasicType.INT)),
+        (placeholder, '[]', ast.BasicType(ast.BasicType.INT), lambda: placeholder.model),
         ]
 
 def infer_type(expr_node, var_table):
