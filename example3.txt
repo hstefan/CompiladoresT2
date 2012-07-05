@@ -1,0 +1,20 @@
+var a, b : int;
+
+a := 5;
+b := 2;
+
+if a < b then
+    var c : int;
+    while c < a do
+        c := c + b;
+    end;
+
+    a := c;
+    b := c;
+else
+    b := a;
+end;
+
+output a, b;
+a := 0;
+b := 0;
