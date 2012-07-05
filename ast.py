@@ -101,8 +101,8 @@ class LValueVariable(LValue):
 ### Expressions ###########################################
 
 class Expression(Node):
-	def __init__(self):
-		self.type_ = None
+    def __init__(self):
+        self.type_ = None
 
     def accept(self, table):
         super().accept(self, table)
@@ -110,7 +110,7 @@ class Expression(Node):
 
 class BinaryOp(Expression):
     def __init__(self, op_type, arg_a, arg_b):
-		super.__init__()
+        super.__init__()
         self.op_type = op_type # str
         self.arg_a = arg_a # Expression
         self.arg_b = arg_b # Expression
@@ -124,7 +124,7 @@ class BinaryOp(Expression):
 
 class UnaryOp(Expression):
     def __init__(self, op_type, arg):
-		super.__init__()
+        super.__init__()
         self.op_type = op_type # str
         self.arg = arg # Expression
 
@@ -149,7 +149,7 @@ class Literal(Expression):
 
 class Variable(Expression):
     def __init__(self, identifier):
-		super.__init__()
+        super.__init__()
         self.identifier = identifier # str
 
     def accept(self, table):
