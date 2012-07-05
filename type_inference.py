@@ -54,7 +54,7 @@ any_math = Any('+', '-', '*', '/', '%')
 any_bool = Any('and', 'or')
 
 placeholder = Placeholder()
-p_math = PlaceholderAny(ast.BasicType(ast.BasicType.INT), ast.BasicType(ast.BasicType.INT))
+p_math = PlaceholderAny(ast.BasicType(ast.BasicType.INT), ast.BasicType(ast.BasicType.REAL))
 
 op_table = [
         (placeholder, any_rel, placeholder, lambda: ast.BasicType.BOOL),
@@ -65,7 +65,6 @@ op_table = [
         (ast.BasicType(ast.BasicType.BOOL), any_bool, ast.BasicType(ast.BasicType.BOOL), lambda: ast.BasicType(ast.BasicType.BOOL)),
         (ast.BasicType(ast.BasicType.INT), any_math, ast.BasicType(ast.BasicType.REAL), lambda: ast.BasicType(ast.BasicType.REAL)),
         (ast.BasicType(ast.BasicType.REAL), any_math, ast.BasicType(ast.BasicType.INT), lambda: ast.BasicType(ast.BasicType.REAL)),
-        (ast.BasicType(ast.BasicType.REAL), any_math, ast.BasicType(ast.BasicType.REAL), lambda: ast.BasicType(ast.BasicType.REAL))
         ]
 
 def infer_type(expr_node, var_table):
