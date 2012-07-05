@@ -17,31 +17,32 @@ class SymbolTable:
                     self.endereco += 1
 
             #se já existe uma variável com o mesmo nome, chama uma exception
-            if self.tabela_simbolos.get(('escopo', node.names)) == None:
-                self.tabela_simbolos[('escopo', node.names)] = (node.type_expr, tamanho, self.endereco)
-                self.endereco += tamanho
-            else:
-                raise Exception("Dual statement occured!")
+            for name in node.names:
+                if self.tabela_simbolos.get(name) == None:
+                    self.tabela_simbolos[name] = (node.type_expr, tamanho, self.endereco)
+                    self.endereco += tamanho
+                else:
+                    raise Exception("Dual statement occured!")
             
     def printSymbolTable(self):
         print("|------------------------------------------------------------|")
         print("|                       Symbol Table                         |")
         print("|------------------------------------------------------------|")
-        print("|     escopo          nomevar         tipo  tamanho endereço |")
+        print("|   nomevar         tipo       tamanho              endereço |")
         print("|------------------------------------------------------------|")
         for x in self.tabela_simbolos:
-            print("|" , "%10s" % str(x[0]) ,  "%16s" % str(x[1]),  "%12s" % str(self.tabela_simbolos[x][0]) ,
-                  "%8s" % str(self.tabela_simbolos[x][1]) , "%8s" % str(self.tabela_simbolos[x][2]) ,"|")
+            print("|" , "%s" % str(x[0]) ,  "%16s" % str(x[1]),  "%12s" % str(self.tabela_simbolos[x][0]) ,
+                  "%8s" % str(self.tabela_simbolos[x][1]), "|")
         print("|------------------------------------------------------------|")
         
     def testCase(self):
-        a = ast.VariableDeclaration('a', ast.BasicType(ast.BasicType.INT), 2)
-        a2 = ast.VariableDeclaration('a2', ast.BasicType(ast.BasicType.INT), 2)
-        c = ast.VariableDeclaration('c', ast.BasicType(ast.BasicType.CHAR), 'c')
-        c2 = ast.VariableDeclaration('c2', ast.BasicType(ast.BasicType.CHAR), 'c2')
-        b = ast.VariableDeclaration('b', ast.BasicType(ast.BasicType.BOOL), "true")
-        l = ast.VariableDeclaration('vetornovo', ast.TypeArray(ast.BasicType(ast.BasicType.INT), 15), '[15]')
-        b2 = ast.VariableDeclaration('b2', ast.BasicType(ast.BasicType.BOOL), "false")
+        a = ast.VariableDeclaration(['a'], ast.BasicType(ast.BasicType.INT), 2)
+        a2 = ast.VariableDeclaration(['a2'], ast.BasicType(ast.BasicType.INT), 2)
+        c = ast.VariableDeclaration(['c'], ast.BasicType(ast.BasicType.CHAR), 'c')
+        c2 = ast.VariableDeclaration(['c2'], ast.BasicType(ast.BasicType.CHAR), 'c2')
+        b = ast.VariableDeclaration(['b'], ast.BasicType(ast.BasicType.BOOL), "true")
+        l = ast.VariableDeclaration(['vetornovo'], ast.TypeArray(ast.BasicType(ast.BasicType.INT), 15), '[15]')
+        b2 = ast.VariableDeclaration(['b2'], ast.BasicType(ast.BasicType.BOOL), "false")
         self.buildSymbolTableNode(a)
         self.buildSymbolTableNode(c)
         self.buildSymbolTableNode(c2)
