@@ -333,7 +333,7 @@ def parse_statement_list(tokens):
     statements = []
 
     t, v = tokens.peek()
-    while t != '@@eof':
+    while t not in ('@@eof', '@$end'):
         if t == '@$input':
             statements.append(parse_input_statement(tokens))
         elif t == '@$output':
