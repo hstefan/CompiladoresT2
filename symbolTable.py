@@ -1,6 +1,8 @@
 import ast
 import type_inference
 
+table_name_symbom = ['int', 'rea', 'char', 'bool', 'string', 'list']
+
 class SymbolTable:
     def __init__(self):
         self.tabela_simbolos = {} #(escopo, nomevar) : (tipo, tamanho, endereço)
@@ -10,6 +12,8 @@ class SymbolTable:
         if isinstance( node, ast.VariableDeclaration):
             tamanho = type_inference.type_size(node.type_expr)
             if isinstance(node.type_expr, ast.TypeArray):
+                type_expr_node = node.type_expr.subtype
+            elif isinstance(node.type_expr, ast.TypeReference):
                 type_expr_node = node.type_expr.subtype
             else:
                 type_expr_node = node.type_expr
@@ -28,11 +32,16 @@ class SymbolTable:
                 raise Exception("Dual statement occured!")
             
     def printSymbolTable(self):
-        print("Symbol Table:")
-        print("(escopo, nomevar, tipo, tamanho, endereço)")
+        print("|------------------------------------------------------|")
+        print("|                    Symbol Table                      |")
+        print("|------------------------------------------------------|")
+        print("|     escopo      nomevar       tipo  tamanho endereço |")
+        print("|------------------------------------------------------|")
         for x in self.tabela_simbolos:
-            print(x + self.tabela_simbolos[x])
-
+            print("|" , "%10s" % str(x[0]) ,  "%12s" % str(x[1]),  "%10s" % table_name_symbom[self.tabela_simbolos[x][0]] ,
+                  "%8s" % str(self.tabela_simbolos[x][1]) , "%8s" % str(self.tabela_simbolos[x][2]) ,"|")
+        print("|------------------------------------------------------|")
+        
     def testCase(self):
         a = ast.VariableDeclaration('a', ast.BasicType.INT, 2)
         a2 = ast.VariableDeclaration('a2', ast.BasicType.INT, 2)
