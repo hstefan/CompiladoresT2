@@ -28,18 +28,18 @@ class SymbolTable:
         for x in self.tabela_simbolos:
             print(x + self.tabela_simbolos[x])
 
-a = ast.VariableDeclaration('a','int',2)
-a2 = ast.VariableDeclaration('a2','int',2)
-c = ast.VariableDeclaration('c','char','c')
-c2 = ast.VariableDeclaration('c2','char','c2')
-b = ast.VariableDeclaration('b','bool',"true")
-b2 = ast.VariableDeclaration('b2','bool',"false")
-stable = SymbolTable()
-stable.buildSymbolTableNode(a)
-stable.buildSymbolTableNode(c)
-stable.buildSymbolTableNode(c2)
-stable.buildSymbolTableNode(a2)
-stable.buildSymbolTableNode(b)
-stable.buildSymbolTableNode(b2)
-stable.tabela_simbolos
-stable.printSymbolTable()
+    def testCase(self):
+        a = ast.VariableDeclaration('a','int',2)
+        a2 = ast.VariableDeclaration('a2','int',2)
+        c = ast.VariableDeclaration('c','char','c')
+        c2 = ast.VariableDeclaration('c2','char','c2')
+        b = ast.VariableDeclaration('b','bool',"true")
+        b2 = ast.VariableDeclaration('b2','bool',"false")
+        self.buildSymbolTableNode(a)
+        self.buildSymbolTableNode(c)
+        self.buildSymbolTableNode(c2)
+        self.buildSymbolTableNode(a2)
+        self.buildSymbolTableNode(b)
+        self.buildSymbolTableNode(b2)
+        self.tabela_simbolos
+        self.printSymbolTable()
