@@ -1,5 +1,29 @@
 var a : int;
-if a == 0 then 
-    var b : int; 
+var b : int := 0;
+var c : real := 2.5 + 6 - 2;
+var d : char;
+var e : bool := true or false;
+var f : string := "coisas";
+
+var l : list<int> := [1, 2, 5, 2*3];
+
+var complicado : list<real&[10]&>&;
+
+var vetor : int[10];
+
+if (a < b) == not (a != b) and (e or e) then
+	while 10 == 9 do
+		input a;
+		a := a * 2;
+		output a / 2, a;
+	end;
 end;
-    
+
+if a + b * 3.0 then
+	e := true;
+else
+	e := false;
+end;
+
+a[2] := 0;
+a[a[2]] := 2;
