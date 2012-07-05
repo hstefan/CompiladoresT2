@@ -64,40 +64,33 @@ def codegen_block(block):
 def flatten_blocks(bBlock):
     flattened_blocks = []
     to_visit = [bBlock]
-    label_block = 0
-    bBlock.label = label_block
-    label_block += 1
+    next_label = 0
+
+    def get_label(b):
+        if b.label is None:
+            b.label = next_label
+            next_label += 1
+        return b.label
 
     while len(to_visit) > 0:
-        current = to_visit[0]
+        current = to_visit.pop(0)
+        if current.visited:
+            continue
+        current.visited = True
 
         codegen_block(current)
 
-        current.visited = True
-        current.statements.insert(0, '.L%3d' % current.label)
+        flattened_blocks.insert(0, '.L%3d' % get_label(current))
+        flattened_blocks += current.statements
         if current.exit != None:
             if isinstance(current.exit, tuple):
-                if current.exit[0].visited == False:
-                    current.exit[0].label = label_block
-                    label_block += 1
-                    to_visit.append(current.exit[0])
-
-                if current.exit[1].visited == False:
-                    current.exit[1].label = label_block
-                    label_block += 1
-                    to_visit.append(current.exit[1])
-                current.statements.append('jtrue .L%3d' % current.exit[0].label)
-                current.statements.append('jfalse .L%3d' % current.exit[1].label)
+                true_exit, false_exit = current.exit
+                current.statements.append('jtrue .L%3d' % get_label(true_exit))
+                current.statements.append('jfalse .L%3d' % get_label(false_exit))
             else:
-                if current.exit.visited == False:
-                    current.exit.label = label_block
-                    label_block += 1
-                    to_visit.append(current.exit)
-                current.statements.append('jump .L%3d' % current.exit.label)
+                current.statements.append('jump .L%3d' % get_label(current.exit))
         else:
             current.statements.append('halt')
-        flattened_blocks.append(current.statements)
-        to_visit.remove(current)
     return flattened_blocks
 
 def tester_flatten_blocks():
