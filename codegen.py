@@ -27,6 +27,8 @@ def get_short_type(type_):
         return 'array'
     elif isinstance(type_, ast.BasicType):
         return str(type_)
+    else:
+        raise CodegenError(type_)
 
 def emit_list_literal(expr, ctx):
     raise CodegenError("Unsupported.")
@@ -102,7 +104,7 @@ def emit_statement(stmt, ctx):
             ctx.emit_instruction('out.' + short_type, (arg,))
     elif isinstance(stmt, ast.Assignment):
         short_type = get_short_type(stmt.target.resolved_type)
-        arg = emit_expression(expr, ctx)
+        arg = emit_expression(stmt.value, ctx)
         emit_store(stmt.target, arg, ctx)
     elif isinstance(stmt, ast.ConditionCheck):
         arg = emit_expression(expr, ctx)
