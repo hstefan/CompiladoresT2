@@ -17,3 +17,5 @@ def test_parse(fname="example.txt"):
 
     d = defaultdict(lambda: null, {ast.Node: print_node})
     root.accept(d)
+
+    return root

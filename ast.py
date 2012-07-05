@@ -7,6 +7,9 @@ class Program(Node):
     def __init__(self, statements):
         self.statements = statements # [Statement]
 
+    def __str__(self):
+        return '\n'.join(map(str, self.statements))
+
     def accept(self, table):
         super().accept(table)
         table[Program](self)
@@ -26,7 +29,7 @@ class TypeReference(TypeExpression):
         self.subtype = subtype # TypeExpression
 
     def __str__(self):
-        return self.subtype.__str__() + '&'
+        return str(self.subtype) + '&'
 
     def accept(self, table):
         super().accept(table)
@@ -40,7 +43,7 @@ class TypeArray(TypeExpression):
         self.size = size # int
 
     def __str__(self):
-        return self.subtype.__str__() + '[' + str(self.size) + ']'
+        return str(self.subtype) + '[' + str(self.size) + ']'
 
     def accept(self, table):
         super().accept(table)
@@ -62,8 +65,11 @@ class BasicType(TypeExpression):
 
     def __str__(self):
         #move along, nothing to see here
-        return {BasicType.INT : 'int', BasicType.REAL : 'real', BasicType.CHAR : 'char',
+        s = {BasicType.INT : 'int', BasicType.REAL : 'real', BasicType.CHAR : 'char',
             BasicType.BOOL : 'bool', BasicType.STRING : 'string', BasicType.LIST : 'list'}[self.type_]
+        if self.generic is not None:
+            s += '<' + str(self.generic) + '>'
+        return s
 
     def accept(self, table):
         super().accept(table)
@@ -83,6 +89,9 @@ class LValueDereference(LValue):
     def __init__(self, subexpr):
         self.subexpr = subexpr # LValue
 
+    def __str__(self):
+        return str(self.subexpr) + '&'
+
     def accept(self, table):
         super().accept(table)
         table[LValueDereference](self)
@@ -94,6 +103,9 @@ class LValueIndex(LValue):
         self.subexpr = subexpr # LValue
         self.index_expression = index_expression # Expression
 
+    def __str__(self):
+        return str(self.subexpr) + '[' + str(self.index_expression) + ']'
+
     def accept(self, table):
         super().accept(table)
         table[LValueIndex](self)
@@ -104,6 +116,9 @@ class LValueIndex(LValue):
 class LValueVariable(LValue):
     def __init__(self, identifier):
         self.identifier = identifier # str
+
+    def __str__(self):
+        return self.identifier
 
     def accept(self, table):
         super().accept(table)
@@ -126,6 +141,9 @@ class BinaryOp(Expression):
         self.arg_a = arg_a # Expression
         self.arg_b = arg_b # Expression
 
+    def __str__(self):
+        return '({0}) {1} ({2})'.format(self.arg_a, self.op_type, self.arg_b)
+
     def accept(self, table):
         super().accept(table)
         table[BinaryOp](self)
@@ -139,6 +157,9 @@ class UnaryOp(Expression):
         self.op_type = op_type # str
         self.arg = arg # Expression
 
+    def __str__(self):
+        return '{0} ({1})'.format(self.op_type, self.arg)
+
     def accept(self, table):
         super().accept(table)
         table[UnaryOp](self)
@@ -151,6 +172,12 @@ class Literal(Expression):
         self.value = value # Type depends on Literal type
         self.type_ = type_ # Enum in BasicType
 
+    def __str__(self):
+        if isinstance(self.value, list):
+            return '[' + ', '.join(map(str, self.value)) + ']'
+        else:
+            return str(self.value)
+
     def accept(self, table):
         super().accept(table)
         table[Literal](self)
@@ -162,6 +189,9 @@ class Variable(Expression):
     def __init__(self, identifier):
         super().__init__()
         self.identifier = identifier # str
+
+    def __str__(self):
+        return self.identifier
 
     def accept(self, table):
         super().accept(table)
@@ -178,6 +208,9 @@ class InputStatement(Statement):
     def __init__(self, target_list):
         self.target_list = target_list # [LValue]
 
+    def __str__(self):
+        return 'input ' + ', '.join(map(str, self.target_list)) + ';'
+
     def accept(self, table):
         super().accept(table)
         table[InputStatement](self)
@@ -188,6 +221,9 @@ class InputStatement(Statement):
 class OutputStatement(Statement):
     def __init__(self, target_list):
         self.target_list = target_list # [Expression]
+
+    def __str__(self):
+        return 'output ' + ', '.join(map(str, self.target_list)) + ';'
 
     def accept(self, table):
         super().accept(table)
@@ -201,6 +237,15 @@ class IfStatement(Statement):
         self.condition = condition # Expression
         self.then_body = then_body # [Statement]
         self.else_body = else_body # [Statement]
+
+    def __str__(self):
+        s = 'if ' + str(self.condition) + ' then\n'
+        s += '\n'.join(map(str, self.then_body)) + '\n'
+        if self.else_body is not None:
+            s += 'else\n'
+            s += '\n'.join(map(str, self.else_body)) + '\n'
+        s += 'end;'
+        return s
 
     def accept(self, table):
         super().accept(table)
@@ -218,6 +263,11 @@ class WhileStatement(Statement):
         self.condition = condition # Expression
         self.body = body # [Statement]
 
+    def __str__(self):
+        return ('while ' + str(self.condition) + ' do\n' +
+            '\n'.join(map(str, self.body)) + '\n' +
+            'end;')
+
     def accept(self, table):
         super().accept(table)
         table[WhileStatement](self)
@@ -231,6 +281,9 @@ class Assignment(Statement):
         self.target = target # LValue
         self.value = value # Expression
 
+    def __str__(self):
+        return str(self.target) + ' := ' + str(self.value) + ';'
+
     def accept(self, table):
         super().accept(table)
         table[Assignment](self)
@@ -243,6 +296,12 @@ class VariableDeclaration(Statement):
         self.names = names # [str]
         self.type_expr = type_expr # TypeExpression
         self.initializer = initializer # Expression
+
+    def __str__(self):
+        s = 'var ' + ', '.join(map(str, self.names)) + ' : ' + str(self.type_expr)
+        if self.initializer is not None:
+            s += ' := ' + str(self.initializer)
+        return s + ';'
 
     def accept(self, table):
         super().accept(table)
