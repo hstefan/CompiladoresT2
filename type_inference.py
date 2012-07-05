@@ -90,13 +90,15 @@ def infer_expression(expr_node, var_table):
     return expr_node.resolved_type
 
 def match_binary(type_left, type_right, op_type):
-    for i in range(0, len(op_table)):
+    for entry in op_table:
         placeholder.reset()
         p_math.reset()
-        match = op_table[i][1] == op_type and op_table[i][0] == type_left and op_table[i][2] == type_right
-        if match:
-            return op_table[i][3]
-    raise InferenceException("No matches for %s %s %s", type_left.__str__(), op_type, type_right.__str__())
+
+        e_left, e_op, e_right, e_result = entry
+        if e_op == op_type and e_left == type_left and e_right == type_right:
+            return e_result()
+
+    raise InferenceError("No matches for {0} {1} {2}".format(type_left, op_type, type_right))
 
 def match_unary(type_, op_type):
     if op_type == 'not':
