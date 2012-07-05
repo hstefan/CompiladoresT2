@@ -25,15 +25,15 @@ class SymbolTable:
                     raise Exception("Dual statement occured!")
             
     def printSymbolTable(self):
-        print("|------------------------------------------------------------|")
-        print("|                       Symbol Table                         |")
-        print("|------------------------------------------------------------|")
-        print("|   nomevar         tipo       tamanho              endereço |")
-        print("|------------------------------------------------------------|")
+        print("|-------------------------------------------------|")
+        print("|                   Symbol Table                  |")
+        print("|-------------------------------------------------|")
+        print("|          nomevar         tipo  tamanho endereço |")
+        print("|-------------------------------------------------|")
         for x in self.tabela_simbolos:
-            print("|" , "%s" % str(x[0]) ,  "%16s" % str(x[1]),  "%12s" % str(self.tabela_simbolos[x][0]) ,
-                  "%8s" % str(self.tabela_simbolos[x][1]), "|")
-        print("|------------------------------------------------------------|")
+            print("|" ,  "%16s" % str(x[0]),  "%12s" % str(self.tabela_simbolos[x][0]) ,
+                  "%8s" % str(self.tabela_simbolos[x][1]) , "%8s" % str(self.tabela_simbolos[x][2]) ,"|")
+        print("|-------------------------------------------------|")
         
     def testCase(self):
         a = ast.VariableDeclaration(['a'], ast.BasicType(ast.BasicType.INT), 2)
