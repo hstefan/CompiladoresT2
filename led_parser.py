@@ -1,5 +1,6 @@
 import ast
 import lexer
+from collections import OrderedDict
 
 class ParseError(Exception):
     pass
@@ -357,20 +358,22 @@ def parse_program(token_iter):
     return ast.Program(parse_statement_list(TokenPeek(token_iter)))
 
 def create_lexer():
-    tokens_info = {
-        "@@skip" : r"(?:\s*(?://[^\n]*\n)?)*",
-        "@identifier" : r"([a-zA-Z_][a-zA-Z0-9_]*)",
-        "@int-literal" : r"([0-9]+)",
-        "@real-literal" : r"([0-9]+\.[0-9]+)",
-        "@char-literal" : r"'(.)'",
-        "@string-literal" : '"' + r"([^\"]*)" + '"'
-    }
+    tokens_info = OrderedDict()
 
-    literals = ['int', 'real', 'char', 'bool', 'string', 'list', 'map', '&', '[', ']',
+    literals = {'int', 'real', 'char', 'bool', 'string', 'list', 'map', '&', '[', ']',
             'true', 'false', '{', '}', '(', ')', 'not', '*', '/', '%', '+', '-', '==',
             '!=', '<', '<=', '>', '>=', 'and', 'or', 'input', 'output', 'if', 'then',
-            'else', 'end', 'while', 'do', ':=', 'var', ':', ';']
+            'else', 'end', 'while', 'do', ':=', 'var', ':', ';'}
     lexer.add_literal_tokens(tokens_info, literals)
+
+    tokens_info.update([
+        ("@@skip", r"(?:\s*(?://[^\n]*\n)?)*"),
+        ("@identifier", r"([a-zA-Z_][a-zA-Z0-9_]*)"),
+        ("@real-literal", r"([0-9]+\.[0-9]+)"),
+        ("@int-literal", r"([0-9]+)"),
+        ("@char-literal", r"'(.)'"),
+        ("@string-literal", '"' + r"([^\"]*)" + '"')
+        ])
 
     return lexer.Tokenizer(tokens_info)
 
