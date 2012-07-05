@@ -65,6 +65,7 @@ op_table = [
         (ast.BasicType(ast.BasicType.BOOL), any_bool, ast.BasicType(ast.BasicType.BOOL), lambda: ast.BasicType(ast.BasicType.BOOL)),
         (ast.BasicType(ast.BasicType.INT), any_math, ast.BasicType(ast.BasicType.REAL), lambda: ast.BasicType(ast.BasicType.REAL)),
         (ast.BasicType(ast.BasicType.REAL), any_math, ast.BasicType(ast.BasicType.INT), lambda: ast.BasicType(ast.BasicType.REAL)),
+        (ast.BasicType(ast.BasicType.REAL), any_math, ast.BasicType(ast.BasicType.REAL), lambda: ast.BasicType(ast.BasicType.REAL))
         ]
 
 def infer_type(expr_node, var_table):
@@ -75,12 +76,12 @@ def infer_expression(expr_node, var_table):
     if expr_node.resolved_type is None:
         if isinstance(expr_node, ast.BinaryOp):
             expr_node.resolved_type = match_binary(
-                    infer_expression(expr_node.arg_a),
-                    infer_expression(expr_node.arg_b),
+                    infer_expression(expr_node.arg_a, var_table),
+                    infer_expression(expr_node.arg_b, var_table),
                     expr_node.op_type)
         elif isinstance(expr_node, ast.UnaryOp):
             expr_node.resolved_type = match_unary(
-                    infer_expression(expr_node.arg),
+                    infer_expression(expr_node.arg, var_table),
                     expr_node.op_type)
         elif isinstance(expr_node, ast.Variable):
             expr_node.resolved_type = var_table[expr_node.identifier]
