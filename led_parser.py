@@ -295,7 +295,7 @@ def parse_input_statement(tokens):
 
 def parse_output_statement(tokens):
     tokens.expect('@$output')
-    return ast.InputStatement(util_parse_list(tokens, parse_expression))
+    return ast.OutputStatement(util_parse_list(tokens, parse_expression))
 
 def parse_statement_list(tokens):
     statements = []
