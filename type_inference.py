@@ -44,7 +44,7 @@ class PlaceholderAny:
 
     def reset(self):
         self.placed = False
-        self.model = None
+        self.modl = None
 
 sz_table = {ast.BasicType.INT : 4, ast.BasicType.REAL : 4, ast.BasicType.CHAR : 1, ast.BasicType.BOOL : 1,
         ast.BasicType.STRING : 8, ast.BasicType.LIST : 8}
@@ -65,6 +65,7 @@ op_table = [
         (ast.BasicType(ast.BasicType.BOOL), any_bool, ast.BasicType(ast.BasicType.BOOL), lambda: ast.BasicType(ast.BasicType.BOOL)),
         (ast.BasicType(ast.BasicType.INT), any_math, ast.BasicType(ast.BasicType.REAL), lambda: ast.BasicType(ast.BasicType.REAL)),
         (ast.BasicType(ast.BasicType.REAL), any_math, ast.BasicType(ast.BasicType.INT), lambda: ast.BasicType(ast.BasicType.REAL)),
+        (placeholder, '[]', ast.BasicType(ast.BasicType.INT)),
         ]
 
 def infer_type(expr_node, var_table):
@@ -77,19 +78,25 @@ def infer_lvalue(expr_node, var_table):
             expr_node.resolved_type = infer_lvalue(expr_node.subexpr, var_table)
         elif isinstance(expr_node, ast.LValueIndex):
             sub_expr_t = infer_lvalue(expr_node.subexpr, var_table)
-            index_t = infer_lvalue(expr_node.index_expression, var_table)
-            if index_t.type_ != ast.BasicType.INT:
-                raise InferenceException("Index must be int.")
-            if isinstance(index_t, ast.BasicType):
-                if isinstance(sub_expr_t, ast.BasicType):
-                    if sub_expr_t.type_ == ast.BasicType.LIST:
-                        expr_node.resolved_type = infer_lvalue(sub_expr_t.generic, var_table)
-                elif isinstance(sub_expr_t, ast.TypeArray):
-                        expr_node.resolved_type = infer_lvalue(sub_expr_t.subtype, var_table)
-                else:
-                    raise InferenceException('Index lvalues are defined only for lists and arrays.')
+            index_t = infer_expression(expr_node.index_expression, var_table)
+
+            if not isinstance(index_t, ast.BasicType) or index_t.type_ != ast.BasicType.INT:
+                raise InferenceError("Index must be int.")
+
+            print(type(expr_node.subexpr), str(expr_node.subexpr))
+            print(type(sub_expr_t))
+            if isinstance(sub_expr_t, ast.BasicType) and sub_expr_t.type_ == ast.BasicType.LIST:
+                    expr_node.resolved_type = infer_lvalue(sub_expr_t.generic, var_table)
+            elif isinstance(sub_expr_t, ast.TypeArray):
+                    expr_node.resolved_type = sub_expr_t.subtype
+            else:
+                raise InferenceError('Index lvalues are defined only for lists and arrays.')
         elif isinstance(expr_node, ast.LValueVariable):
             expr_node.resolved_type = var_table[expr_node.identifier][0]
+        else:
+            raise InferenceError(str(expr_node))
+
+    return expr_node.resolved_type
 
 def infer_expression(expr_node, var_table):
     if expr_node.resolved_type is None:

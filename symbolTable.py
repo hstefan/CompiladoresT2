@@ -34,21 +34,3 @@ class SymbolTable:
             print("|" ,  "%16s" % str(x[0]),  "%12s" % str(self.tabela_simbolos[x][0]) ,
                   "%8s" % str(self.tabela_simbolos[x][1]) , "%8s" % str(self.tabela_simbolos[x][2]) ,"|")
         print("|-------------------------------------------------|")
-        
-    def testCase(self):
-        a = ast.VariableDeclaration(['a'], ast.BasicType(ast.BasicType.INT), 2)
-        a2 = ast.VariableDeclaration(['a2'], ast.BasicType(ast.BasicType.INT), 2)
-        c = ast.VariableDeclaration(['c'], ast.BasicType(ast.BasicType.CHAR), 'c')
-        c2 = ast.VariableDeclaration(['c2'], ast.BasicType(ast.BasicType.CHAR), 'c2')
-        b = ast.VariableDeclaration(['b'], ast.BasicType(ast.BasicType.BOOL), "true")
-        l = ast.VariableDeclaration(['vetornovo'], ast.TypeArray(ast.BasicType(ast.BasicType.INT), 15), '[15]')
-        b2 = ast.VariableDeclaration(['b2'], ast.BasicType(ast.BasicType.BOOL), "false")
-        self.buildSymbolTableNode(a)
-        self.buildSymbolTableNode(c)
-        self.buildSymbolTableNode(c2)
-        self.buildSymbolTableNode(a2)
-        self.buildSymbolTableNode(b)
-        self.buildSymbolTableNode(l)
-        self.buildSymbolTableNode(b2)
-        self.tabela_simbolos
-        self.printSymbolTable()
