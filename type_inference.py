@@ -27,7 +27,6 @@ def infer_expression(expr_node, var_table):
 def match_binary(arg_a, arg_b, op_type):
     inf_a = infer_expression(arg_a)
     inf_b = infer_expression(arg_b)
-    #todo
 
 def match_unary(arg, op):
     if op_type == 'not':
