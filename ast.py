@@ -24,7 +24,7 @@ class TypeExpression(Node):
 class TypeReference(TypeExpression):
     def __init__(self, subtype):
         self.subtype = subtype # TypeExpression
-    
+
     def __str__(self):
         return self.subtype.__str__() + '&'
 
@@ -38,7 +38,7 @@ class TypeArray(TypeExpression):
     def __init__(self, subtype, size):
         self.subtype = subtype # TypeExpression
         self.size = size # int
-    
+
     def __str__(self):
         return self.subtype.__str__() + '[' + str(self.size) + ']'
 
@@ -60,10 +60,10 @@ class BasicType(TypeExpression):
     def __init__(self, type_, generic=None):
         self.type_ = type_ # See enum above
         self.generic = generic # TypeExpression
-    
+
     def __str__(self):
         #move along, nothing to see here
-        return {BasicType.INT : 'int', BasicType.REAL : 'real', BasicType.CHAR : 'char', 
+        return {BasicType.INT : 'int', BasicType.REAL : 'real', BasicType.CHAR : 'char',
             BasicType.BOOL : 'bool', BasicType.STRING : 'string', BasicType.LIST : 'list',
             BasicType.MAP : 'map'}[self.type_]
 
