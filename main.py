@@ -2,15 +2,17 @@ import sys
 import argparse
 import led_parser
 import symbolTable
+import ast
+from collections import defaultdict
 
 #initializes the command line argument parser
 def init_clp():
     parser = argparse.ArgumentParser(
         description='Generates intermediary code for a given source code. Code must follow specific syntax.')
-    parser.add_argument('source', metavar='SOURCE', type=str, dest='source',
-        help='Path to source code files')  
+    parser.add_argument('-i', '--input', metavar='SOURCE', type=str, dest='source',
+        help='Path to source code files.')  
     parser.add_argument('-o', '--output', metavar='grammar', type=str, 
-        help='The output file for generated code.', dest='output_f')i
+        help='The output file for generated code.', dest='output_f')
     return parser
 
 if __name__ == '__main__':
@@ -20,15 +22,19 @@ if __name__ == '__main__':
     lexer = led_parser.create_lexer()
     src = None
 
-    if args.sources != None:
+    if args.source != None:
         with open(args.source) as code: 
             src = code.read()
     else:
         src = sys.stdin.read()
 
-    tokens = lexex.parse_program(src)
+    tokens = lexer.lex_input(src)
     root = led_parser.parse_program(tokens)
     symbol_table = symbolTable.SymbolTable() 
-    symbol_table.buildSymbolTableNode(root)
+
+    def null(o):
+        pass
+    d = defaultdict(lambda: null, {ast.Node: lambda x: symbol_table.buildSymbolTableNode(x)})
+    root.accept(d)
 
     symbol_table.printSymbolTable()
