@@ -99,6 +99,21 @@ def infer_expression(expr_node, var_table):
                     expr_node.resolved_type = ast.BasicType(ast.BasicType.LIST, res_type)
             else:
                 expr_node.resolved_type = ast.BasicType(expr_node.type_)
+        elif isinstance(type_node, ast.LValueDereference):
+            expr_node.resolved_type = infer_expression(expr_node.subexpr, var_table) 
+        elif isinstance(type_node, ast.LValueIndex):
+            sub_expr_t = infer_expression(expr_node.subexpr, var_table)
+            index_t = infer_expression(expr_node.index_expression, var_table)
+            if isinstance(index_t, ast.BasicType) and index_t.type == ast.BasicType.INT:
+                if isinstance(sub_expr_t, ast.BasicType):
+                    if sub_expr_t.type_ == ast.BasicType.LIST:
+                        return infer_expression(sub_expr_t.generic, var_table)
+                elif isinstance(sub_expr_t, ast.TypeArray):
+                    return infer_expression(sub_expr_t.subtype)   
+                else:
+                    raise InferenceException('Index lvalues are defined only for lists and arrays.')
+        elif isinstance(type_node, ast.LValueVariable):
+            return var_table[type_node.identifier][0]
 
     return expr_node.resolved_type
 
@@ -131,3 +146,4 @@ def type_size(type_node):
         return type_size(type_node.subtype) * type_node.size
     elif isinstance(type_node, int):
         return sz_table[type_node]
+
