@@ -30,7 +30,7 @@ class TokenPeek:
         return v
 
     def peek_id(self):
-        t, v = self.next()
+        t, v = self.peek()
         return t
 
 ###########################################################
