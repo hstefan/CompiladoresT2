@@ -2,6 +2,7 @@ import re
 
 class TokenError(Exception):
     def __init__(self, token_name, message):
+        super().__init__(message)
         self.token = token_name
         self.message = message
 
@@ -56,4 +57,3 @@ class Tokenizer(object):
             else:
                 yield (self.token_names_list[m.lastindex-1], m.group(m.lastindex))
         yield ('@@eof', '')
-
