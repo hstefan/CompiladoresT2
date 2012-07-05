@@ -3,6 +3,7 @@ import argparse
 import led_parser
 import symbolTable
 import ast
+import code_layout
 from collections import defaultdict
 
 #initializes the command line argument parser
@@ -20,7 +21,7 @@ if __name__ == '__main__':
     args = arg_parser.parse_args()
 
     lexer = led_parser.create_lexer()
-    src = None
+    src = ""
 
     if args.source != None:
         with open(args.source) as code: 
@@ -30,7 +31,7 @@ if __name__ == '__main__':
 
     tokens = lexer.lex_input(src)
     root = led_parser.parse_program(tokens)
-    symbol_table = symbolTable.SymbolTable() 
+    symbol_table = symbolTable.SymbolTable()
 
     def null(o):
         pass
@@ -38,3 +39,10 @@ if __name__ == '__main__':
     root.accept(d)
 
     symbol_table.printSymbolTable()
+
+    tuple_Blocks = code_layout.split_statement_list(root.statements)
+
+    generated_code = code_layout.flatten_blocks(tuple_Blocks[0])
+    for x in generated_code:
+        for command in x:
+            print(command)
