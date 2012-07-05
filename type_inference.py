@@ -56,7 +56,7 @@ op_table = [
         (placeholder, any_rel, placeholder, lambda: ast.BasicType.BOOL),
         (p_math, any_math, p_math, lambda: p_math.model),
         (ast.BasicType(ast.BasicType.LIST), '+', placeholder, lambda: placeholder.model),
-        (ast.BasicType(ast.BasicType.STRING), '+', Any(ast.BasicType(ast.BasicType.CHAR), ast.BasicType(ast.BasicType.STRING)), 
+        (ast.BasicType(ast.BasicType.STRING), '+', Any(ast.BasicType(ast.BasicType.CHAR), ast.BasicType(ast.BasicType.STRING)),
             lambda: ast.BasicType(ast.BasicType.STRING)),
         (ast.BasicType(ast.BasicType.BOOL), any_bool, ast.BasicType(ast.BasicType.BOOL), lambda: ast.BasicType(ast.BasicType.BOOL)),
         (ast.BasicType(ast.BasicType.INT), any_math, ast.BasicType(ast.BasicType.REAL), lambda: ast.BasicType(ast.BasicType.REAL)),
@@ -69,7 +69,7 @@ def infer_type(expr_node, var_table):
 
 def infer_expression(expr_node, var_table):
     if isinstance(expr_node, ast.BinaryOp):
-        expr_node.type_ = match_binary(infer_expression(expr_node.arg_a), 
+        expr_node.type_ = match_binary(infer_expression(expr_node.arg_a),
         infer_expression(expr_node.arg_b), expr_node.op_type)
     elif isinstance(expr_node, ast.UnaryOp):
         expr_node.type_ = match_unary(infer_expression(expr_node.arg), expr_node.op_type)
@@ -84,7 +84,7 @@ def match_binary(arg_a, arg_b, op_type):
     for i in range(0, len(op_table)):
         placeholder.reset()
         p_math.reset()
-        match = op_table[i][0] == cur_left and op_table[i][1] == op_type and op_table[i][2] == cur_right
+        match = op_table[i][1] == op_type and op_table[i][0] == cur_left and op_table[i][2] == cur_right
         if match:
             return op_table[i][3]
     raise InferenceException("No matches for %s %s %s", cur_left.__str__(), op_type, cur_right.__str__())
@@ -108,4 +108,3 @@ def type_size(type_node):
         return type_size(type_node.subtype) * type_node.size
     elif isinstance(type_node, int):
         return sz_table[type_node]
-
