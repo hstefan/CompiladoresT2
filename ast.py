@@ -236,7 +236,7 @@ class Assignment(Statement):
         table[Assignment](self)
 
         self.target.accept(table)
-        self.target.accept(value)
+        self.value.accept(table)
 
 class VariableDeclaration(Statement):
     def __init__(self, names, type_expr, initializer):

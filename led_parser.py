@@ -71,7 +71,7 @@ def parse_basic_type(tokens):
     types = {
             '@$int': (ast.BasicType.INT, False),
             '@$real': (ast.BasicType.REAL, False),
-            '@$real': (ast.BasicType.CHAR, False),
+            '@$char': (ast.BasicType.CHAR, False),
             '@$bool': (ast.BasicType.BOOL, False),
             '@$string': (ast.BasicType.STRING, False),
             '@$list': (ast.BasicType.LIST, True)
@@ -301,7 +301,7 @@ def parse_statement_list(tokens):
     statements = []
 
     t, v = tokens.peek()
-    while t not in ('@@eof', '@$end'):
+    while t not in ('@@eof', '@$end', '@$else'):
         if t == '@$input':
             statements.append(parse_input_statement(tokens))
         elif t == '@$output':
@@ -328,10 +328,15 @@ def parse_program(token_iter):
 def create_lexer():
     tokens_info = OrderedDict()
 
-    literals = {'int', 'real', 'char', 'bool', 'string', 'list', '&', '[', ']',
-            'true', 'false', '(', ')', 'not', '*', '/', '%', '+', '-', '==',
-            '!=', '<', '<=', '>', '>=', 'and', 'or', 'input', 'output', 'if', 'then',
-            'else', 'end', 'while', 'do', ':=', 'var', ':', ';'}
+    literals = {'int', 'real', 'char', 'bool', 'string', 'list',
+            'true', 'false',
+            'not', 'and', 'or',
+            'input', 'output', 'if', 'then', 'else', 'end', 'while', 'do', 'var',
+            '&', '[', ']', '(', ')',
+            '+', '-', '*', '/', '%',
+            '==', '!=', '<', '<=', '>', '>=',
+            ',', ':=', ':', ';'
+            }
     lexer.add_literal_tokens(tokens_info, literals)
 
     tokens_info.update([
