@@ -128,7 +128,7 @@ class LValueVariable(LValue):
 
 class Expression(Node):
     def __init__(self):
-        self.type_ = None
+        self.resolved_type = None
 
     def accept(self, table):
         super().accept(table)

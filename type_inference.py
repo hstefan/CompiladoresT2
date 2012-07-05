@@ -68,36 +68,40 @@ def infer_type(expr_node, var_table):
     expr_node.accept(table)
 
 def infer_expression(expr_node, var_table):
-    if isinstance(expr_node, ast.BinaryOp):
-        expr_node.type_ = match_binary(infer_expression(expr_node.arg_a),
-        infer_expression(expr_node.arg_b), expr_node.op_type)
-    elif isinstance(expr_node, ast.UnaryOp):
-        expr_node.type_ = match_unary(infer_expression(expr_node.arg), expr_node.op_type)
-    elif isinstance(expr_node, ast.Variable):
-        expr_node.type_ = var_table[expr_node.identifier]
-    return expr_node.type_
+    if expr_node.resolved_type is None:
+        if isinstance(expr_node, ast.BinaryOp):
+            expr_node.resolved_type = match_binary(
+                    infer_expression(expr_node.arg_a),
+                    infer_expression(expr_node.arg_b),
+                    expr_node.op_type)
+        elif isinstance(expr_node, ast.UnaryOp):
+            expr_node.resolved_type = match_unary(
+                    infer_expression(expr_node.arg),
+                    expr_node.op_type)
+        elif isinstance(expr_node, ast.Variable):
+            expr_node.resolved_type = var_table[expr_node.identifier]
+        elif isinstance(expr_node, ast.Literal):
+            expr_node.resolved_type = ast.BasicType(expr_node.type_)
 
-def match_binary(arg_a, arg_b, op_type):
-    cur_left = infer_expression(arg_a)
-    cur_right = infer_expression(arg_b)
+    return expr_node.resolved_type
 
+def match_binary(type_left, type_right, op_type):
     for i in range(0, len(op_table)):
         placeholder.reset()
         p_math.reset()
-        match = op_table[i][1] == op_type and op_table[i][0] == cur_left and op_table[i][2] == cur_right
+        match = op_table[i][1] == op_type and op_table[i][0] == type_left and op_table[i][2] == type_right
         if match:
             return op_table[i][3]
-    raise InferenceException("No matches for %s %s %s", cur_left.__str__(), op_type, cur_right.__str__())
+    raise InferenceException("No matches for %s %s %s", type_left.__str__(), op_type, type_right.__str__())
 
-def match_unary(arg, op):
+def match_unary(type_, op_type):
     if op_type == 'not':
-        infered = infer_expression(arg)
-        if infered == ast.BasicType.BOOL:
-            return ast.BasicType(st.BasicType.BOOL)
+        if type_ == ast.BasicType(ast.BasicType.BOOL):
+            return type_
         else:
             raise InferenceError("Expected boolean argument, got %s", infered.__str__())
     elif op_type == '&':
-        return ast.TypeReference(arg)
+        return ast.TypeReference(type_)
 
 def type_size(type_node):
     if isinstance(type_node, ast.BasicType):
