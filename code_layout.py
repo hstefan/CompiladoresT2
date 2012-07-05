@@ -74,7 +74,7 @@ def flatten_blocks(bBlock):
         codegen_block(current)
 
         current.visited = True
-        current.statements.insert(0,'.L' + ('%d' % current.label).zfill(4))
+        current.statements.insert(0, '.L%3d' % current.label)
         if current.exit != None:
             if isinstance(current.exit, tuple):
                 if current.exit[0].visited == False:
@@ -86,14 +86,14 @@ def flatten_blocks(bBlock):
                     current.exit[1].label = label_block
                     label_block += 1
                     to_visit.append(current.exit[1])
-                current.statements.append('jtrue .L' + ('%d' % current.exit[0].label).zfill(4))
-                current.statements.append('jfalse .L' + ('%d' % current.exit[1].label).zfill(4))
+                current.statements.append('jtrue .L%3d' % current.exit[0].label)
+                current.statements.append('jfalse .L%3d' % current.exit[1].label)
             else:
                 if current.exit.visited == False:
                     current.exit.label = label_block
                     label_block += 1
                     to_visit.append(current.exit)
-                current.statements.append('jump .L' + ('%d' % current.exit.label).zfill(4))
+                current.statements.append('jump .L%3d' % current.exit.label)
         else:
             current.statements.append('halt')
         flattened_blocks.append(current.statements)
