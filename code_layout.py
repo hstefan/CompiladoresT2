@@ -1,4 +1,5 @@
 import ast
+import codegen
 
 class BasicBlock:
     def __init__(self):
@@ -54,6 +55,12 @@ def split_statement_list(statements):
 
     return head_block, current_block
 
+def codegen_block(block):
+    ctx = codegen.EmitContext()
+    for stmt in block.statements:
+        codegen.emit_statement(stmt, ctx)
+    block.statements = ctx.instructions
+
 def flatten_blocks(bBlock):
     flattened_blocks = []
     to_visit = [bBlock]
@@ -62,31 +69,35 @@ def flatten_blocks(bBlock):
     label_block += 1
 
     while len(to_visit) > 0:
-        to_visit[0].visited = True
-        to_visit[0].statements.insert(0,'.L' + ('%d' % to_visit[0].label).zfill(4))
-        if to_visit[0].exit != None:
-            if isinstance(to_visit[0].exit, tuple):
-                if to_visit[0].exit[0].visited == False:
-                    to_visit[0].exit[0].label = label_block
+        current = to_visit[0]
+
+        codegen_block(current)
+
+        current.visited = True
+        current.statements.insert(0,'.L' + ('%d' % current.label).zfill(4))
+        if current.exit != None:
+            if isinstance(current.exit, tuple):
+                if current.exit[0].visited == False:
+                    current.exit[0].label = label_block
                     label_block += 1
-                    to_visit.append(to_visit[0].exit[0])
-                    
-                if to_visit[0].exit[1].visited == False:
-                    to_visit[0].exit[1].label = label_block
+                    to_visit.append(current.exit[0])
+
+                if current.exit[1].visited == False:
+                    current.exit[1].label = label_block
                     label_block += 1
-                    to_visit.append(to_visit[0].exit[1])
-                to_visit[0].statements.append('jtrue .L' + ('%d' % to_visit[0].exit[0].label).zfill(4))
-                to_visit[0].statements.append('jfalse .L' + ('%d' % to_visit[0].exit[1].label).zfill(4))
+                    to_visit.append(current.exit[1])
+                current.statements.append('jtrue .L' + ('%d' % current.exit[0].label).zfill(4))
+                current.statements.append('jfalse .L' + ('%d' % current.exit[1].label).zfill(4))
             else:
-                if to_visit[0].exit.visited == False:
-                    to_visit[0].exit.label = label_block
+                if current.exit.visited == False:
+                    current.exit.label = label_block
                     label_block += 1
-                    to_visit.append(to_visit[0].exit)
-                to_visit[0].statements.append('jump .L' + ('%d' % to_visit[0].exit.label).zfill(4))
+                    to_visit.append(current.exit)
+                current.statements.append('jump .L' + ('%d' % current.exit.label).zfill(4))
         else:
-            to_visit[0].statements.append('halt')
-        flattened_blocks.append(to_visit[0].statements)
-        to_visit.remove(to_visit[0])
+            current.statements.append('halt')
+        flattened_blocks.append(current.statements)
+        to_visit.remove(current)
     return flattened_blocks
 
 def tester_flatten_blocks():
@@ -106,5 +117,3 @@ def tester_flatten_blocks():
                 print("    " + command)
             else:
                 print(command)
-                
-
