@@ -1,14 +1,14 @@
 import ast
+import type_inference
 
 class SymbolTable:
     def __init__(self):
         self.tabela_simbolos = {} #(escopo, nomevar) : (tipo, tamanho, endereço)
         self.endereco = 0
-        self.tamanhos = {'int' : 4 , 'char' : 1 , 'bool' : 1 }
 
     def buildSymbolTableNode(self, node):
         if isinstance( node, ast.VariableDeclaration):
-            tamanho = self.tamanhos[node.type_expr]
+            tamanho = type_inference.type_size(node.type_expr)
 
             #Caso o tamanho não é compatível na hora de colocar na tabela
             #arrumar o endereço que a variável será adicionada
@@ -29,12 +29,12 @@ class SymbolTable:
             print(x + self.tabela_simbolos[x])
 
     def testCase(self):
-        a = ast.VariableDeclaration('a','int',2)
-        a2 = ast.VariableDeclaration('a2','int',2)
-        c = ast.VariableDeclaration('c','char','c')
-        c2 = ast.VariableDeclaration('c2','char','c2')
-        b = ast.VariableDeclaration('b','bool',"true")
-        b2 = ast.VariableDeclaration('b2','bool',"false")
+        a = ast.VariableDeclaration('a', ast.BasicType.INT, 2)
+        a2 = ast.VariableDeclaration('a2', ast.BasicType.INT, 2)
+        c = ast.VariableDeclaration('c', ast.BasicType.CHAR, 'c')
+        c2 = ast.VariableDeclaration('c2', ast.BasicType.CHAR, 'c2')
+        b = ast.VariableDeclaration('b', ast.BasicType.BOOL, "true")
+        b2 = ast.VariableDeclaration('b2', ast.BasicType.BOOL, "false")
         self.buildSymbolTableNode(a)
         self.buildSymbolTableNode(c)
         self.buildSymbolTableNode(c2)
