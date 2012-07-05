@@ -1,5 +1,8 @@
 import ast
 
+class CodegenError(Exception):
+    pass
+
 class EmitContext:
     def __init__(self):
         self.instructions = []
@@ -26,8 +29,7 @@ def get_short_type(type_):
         return str(type_)
 
 def emit_list_literal(expr, ctx):
-    pass
-    # TODO
+    raise CodegenError("Unsupported.")
 
 def emit_expression(expr, ctx):
     if isinstance(expr, ast.Variable):
@@ -55,7 +57,8 @@ def emit_expression(expr, ctx):
                 '+': 'add', '-': 'sub', '*': 'mul', '/': 'div', '%': 'mod',
                 'and': 'and', 'or': 'or',
                 '==': 'eq', '!=': 'neq',
-                '<': 'lt', '<=': 'leq', '>': 'gt', '>=': 'gte'
+                '<': 'lt', '<=': 'leq', '>': 'gt', '>=': 'gte',
+                '[]': 'get'
                 }
         short_type = get_short_type(expr.resolved_type)
 
@@ -69,20 +72,38 @@ def emit_expression(expr, ctx):
         ctx.emit_instruction(binary_ops[expr.op_type] + '.' + short_type, (result, arg_a, arg_b))
         return result
 
+def emit_store(lvalue, source, ctx):
+    if isinstance(lvalue, ast.LValueVariable):
+        ctx.free_tmp(source)
+        ctx.emit_instruction('mov.' + get_short_type(lvalue.resolved_type), ('%' + lvalue.identifier, source))
+    elif isinstance(lvalue, ast.LValueIndex):
+        index_arg = emit_expression(lvalue.index_expression, ctx)
+
+        ctx.free_tmp(index_arg)
+        ctx.free_tmp(source)
+        ctx.emit_instruction('set.' + get_short_type(lvalue.resolved_type),
+                ('%' + lvalue.subexpr.identifier, index_arg, source))
+    else:
+        raise CodegenError("Unsupported.")
+
 def emit_statement(stmt, ctx):
     if isinstance(stmt, ast.InputStatement):
-        pass
-        # TODO
+        for lvalue in stmt.target_list:
+            short_type = get_short_type(expr.resolved_type)
+            dest = ctx.reserve_tmp()
+            ctx.emit_instruction('in.' + short_type, (dest,))
+            emit_store(lvalue, dest, ctx)
     elif isinstance(stmt, ast.OutputStatement):
         for expr in stmt.target_list:
             short_type = get_short_type(expr.resolved_type)
             arg = emit_expression(expr, ctx)
 
             ctx.free_tmp(arg)
-            ctx.emit_instruction('output.' + short_type, (arg,))
+            ctx.emit_instruction('out.' + short_type, (arg,))
     elif isinstance(stmt, ast.Assignment):
-        pass
-        # TODO
+        short_type = get_short_type(stmt.target.resolved_type)
+        arg = emit_expression(expr, ctx)
+        emit_store(stmt.target, arg, ctx)
     elif isinstance(stmt, ast.ConditionCheck):
         arg = emit_expression(expr, ctx)
 
