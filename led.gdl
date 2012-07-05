@@ -20,7 +20,7 @@
 
 identifier-list := @identifier => ( ',' => @identifier )* ;
 
-generic := '[' => type-expression => ']' ;
+generic := '<' => type-expression => '>' ;
 basic-type := 'int' | 'real' | 'char' | 'bool' | 'string' | 'list' => generic | 'map' => generic => generic;
 type-decoration := '&' | ( '[' => @int-literal => ']' ) ;
 type-expression := basic-type => type-decoration* ;

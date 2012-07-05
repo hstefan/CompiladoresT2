@@ -47,6 +47,233 @@ def util_parse_list(tokens, func, sep_token='@$,'):
 
     return items
 
+def parse_identifier(tokens):
+    return tokens.expect('@identifier')
+
+def parse_int(tokens):
+    return int(tokens.expect('@int-literal'))
+
+def parse_real(tokens):
+    return float(tokens.expect('@real-literal'))
+
+def parse_char(tokens):
+    return tokens.expect('@char-literal')
+
+def parse_string(tokens):
+    return tokens.expect('@string-literal')
+
+def parse_basic_type(tokens):
+    t, v = tokens.pop()
+
+    generic = None
+
+    types = {
+            '@$int': (ast.BasicType.INT, False),
+            '@$real': (ast.BasicType.REAL, False),
+            '@$real': (ast.BasicType.CHAR, False),
+            '@$bool': (ast.BasicType.BOOL, False),
+            '@$string': (ast.BasicType.STRING, False),
+            '@$list': (ast.BasicType.LIST, True),
+            '@$map': (ast.BasicType.MAP, True)
+            }
+
+    try:
+        type_, has_generic = types[t]
+    except KeyError:
+        raise ParseError("Expected type; got {0}.".format(t))
+
+    if has_generic:
+        tokens.expect('@$<')
+        generic = parse_type_expression(tokens)
+        tokens.expect('@$>')
+    else:
+        generic = None
+
+    return ast.BasicType(type_, generic)
+
+def parse_type_expression(tokens):
+    node = parse_basic_type(tokens)
+
+    t, v = tokens.peek()
+    while t in ('@$&', '@$['):
+        tokens.next()
+        if t == '@$&':
+            node = ast.TypeReference(node)
+        elif t == '@$[':
+            size = parse_int(tokens)
+            node = ast.TypeArray(node, size)
+            tokens.expect('@$]')
+        t, v = tokens.peek()
+
+    return node
+
+def parse_map_literal(tokens):
+    tokens.expect('@${')
+
+    items = {}
+
+    t, v = tokens.peek()
+    if t == '@$}':
+        tokens.next()
+    else:
+        key = parse_expression(tokens)
+        tokens.expect('@$:')
+        value = parse_expression(tokens)
+        items[key] = value
+
+        t, v = tokens.peek()
+        while t == '@$,':
+            tokens.expect('@$,')
+
+            key = parse_expression(tokens)
+            tokens.expect('@$:')
+            value = parse_expression(tokens)
+            items[key] = value
+
+            t, v = tokens.peek()
+
+        tokens.expect('@$}')
+
+    return ast.Literal(items, ast.BasicType.MAP)
+
+def parse_list_literal(tokens):
+    tokens.expect('@$[')
+
+    items = []
+
+    t, v = tokens.peek()
+    if t == '@$]':
+        tokens.next()
+    else:
+        items.append(parse_expression(tokens))
+
+        t, v = tokens.peek()
+        while t == '@$,':
+            tokens.expect('@$,')
+            items.append(parse_expression(tokens))
+            t, v = tokens.peek()
+
+        tokens.expect('@$]')
+
+    return ast.Literal(items, ast.BasicType.LIST)
+
+def parse_expr_e(tokens):
+    t, v = tokens.peek()
+
+    if t == '@$(':
+        tokens.next()
+        node = parse_expression(tokens)
+        tokens.expect('@$)')
+    elif t == '@identifier':
+        node = ast.Variable(parse_identifier(tokens))
+    elif t == '@int-literal':
+        node = ast.Literal(parse_int(tokens), ast.BasicType.INT)
+    elif t == '@real-literal':
+        node = ast.Literal(parse_real(tokens), ast.BasicType.REAL)
+    elif t == '@char-literal':
+        node = ast.Literal(parse_char(tokens), ast.BasicType.CHAR)
+    elif t == '@string-literal':
+        node = ast.Literal(parse_string(tokens), ast.BasicType.STRING)
+    elif t == '@$true':
+        tokens.next()
+        node = ast.Literal(True, ast.BasicType.BOOL)
+    elif t == '@$false':
+        tokens.next()
+        node = ast.Literal(False, ast.BasicType.BOOL)
+    elif t == '@$[':
+        node = parse_list_literal(tokens)
+    elif t == '@${':
+        node = parse_map_literal(tokens)
+    else:
+        raise ParseError("Expected identifier or literal; got {0}.".format(t))
+
+    return node
+
+def parse_expr_d(tokens):
+    if tokens.peek_id() == '@$not':
+        tokens.next()
+        should_not = True
+    else:
+        should_not = False
+
+    node = parse_expr_e(tokens)
+
+    t, v = tokens.peek()
+    while t in ('@$&', '@$['):
+        tokens.next()
+        if t == '@$&':
+            node = ast.UnaryOp('&', node)
+        elif t == '@$[':
+            index = parse_expression(tokens)
+            node = ast.BinaryOp('[]', node, index)
+            tokens.expect('@$]')
+        t, v = tokens.peek()
+
+    if should_not:
+        node = ast.UnaryOp('not', node)
+
+    return node
+
+def parse_expr_c(tokens):
+    lhs = parse_expr_d(tokens)
+
+    t, op_type = tokens.peek()
+    if t in ('@$*', '@$/', '@$%'):
+        tokens.next()
+        rhs = parse_expr_c(tokens)
+        return ast.BinaryOp(op_type, lhs, rhs)
+    else:
+        return lhs
+
+def parse_expr_b(tokens):
+    lhs = parse_expr_c(tokens)
+
+    t, op_type = tokens.peek()
+    if t in ('@$+', '@$-'):
+        tokens.next()
+        rhs = parse_expr_b(tokens)
+        return ast.BinaryOp(op_type, lhs, rhs)
+    else:
+        return lhs
+
+def parse_expr_a(tokens):
+    lhs = parse_expr_b(tokens)
+
+    t, op_type = tokens.peek()
+    if t in ('@$==', '@$!=', '@$<', '@$<=', '@$>', '@$>='):
+        tokens.next()
+        rhs = parse_expr_a(tokens)
+        return ast.BinaryOp(op_type, lhs, rhs)
+    else:
+        return lhs
+
+def parse_expression(tokens):
+    lhs = parse_expr_a(tokens)
+
+    t, op_type = tokens.peek()
+    if t in ('@$and', '@$or'):
+        tokens.next()
+        rhs = parse_expression(tokens)
+        return ast.BinaryOp(op_type, lhs, rhs)
+    else:
+        return lhs
+
+def parse_lvalue(tokens):
+    node = ast.LValueVariable(parse_identifier(tokens))
+
+    t, v = tokens.peek()
+    while t in ('@$&', '@$['):
+        tokens.next()
+        if t == '@$&':
+            node = ast.LValueDereference(node)
+        elif t == '@$[':
+            index = parse_expression(tokens)
+            node = ast.LValueIndex(node, index)
+            tokens.expect('@$]')
+        t, v = tokens.peek()
+
+    return node
+
 def parse_assignment(tokens):
     target = parse_lvalue(tokens)
     tokens.expect('@$:=')
@@ -61,6 +288,7 @@ def parse_declaration(tokens):
     type_expr = parse_type_expression(tokens)
 
     if tokens.peek_id() == '@$:=':
+        tokens.next()
         initializer = parse_expression(tokens)
     else:
         initializer = None
