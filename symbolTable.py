@@ -9,15 +9,20 @@ class SymbolTable:
     def buildSymbolTableNode(self, node):
         if isinstance( node, ast.VariableDeclaration):
             tamanho = type_inference.type_size(node.type_expr)
-
+            if isinstance(node.type_expr, ast.TypeArray):
+                type_expr_node = node.type_expr.subtype
+            else:
+                type_expr_node = node.type_expr
+            
             #Caso o tamanho não é compatível na hora de colocar na tabela
             #arrumar o endereço que a variável será adicionada
-            while self.endereco % tamanho != 0:
-                 self.endereco += 1
+            if tamanho % 4 == 0:
+                while self.endereco % 4 != 0:
+                    self.endereco += 1
 
             #se já existe uma variável com o mesmo nome, chama uma exception
             if self.tabela_simbolos.get(('escopo', node.names)) == None:
-                self.tabela_simbolos[('escopo', node.names)] = (node.type_expr, tamanho, self.endereco)
+                self.tabela_simbolos[('escopo', node.names)] = (type_expr_node, tamanho, self.endereco)
                 self.endereco += tamanho
             else:
                 raise Exception("Dual statement occured!")
@@ -34,12 +39,14 @@ class SymbolTable:
         c = ast.VariableDeclaration('c', ast.BasicType.CHAR, 'c')
         c2 = ast.VariableDeclaration('c2', ast.BasicType.CHAR, 'c2')
         b = ast.VariableDeclaration('b', ast.BasicType.BOOL, "true")
+        l = ast.VariableDeclaration('vetornovo', ast.TypeArray(ast.BasicType.INT, 15), '[15]')
         b2 = ast.VariableDeclaration('b2', ast.BasicType.BOOL, "false")
         self.buildSymbolTableNode(a)
         self.buildSymbolTableNode(c)
         self.buildSymbolTableNode(c2)
         self.buildSymbolTableNode(a2)
         self.buildSymbolTableNode(b)
+        self.buildSymbolTableNode(l)
         self.buildSymbolTableNode(b2)
         self.tabela_simbolos
         self.printSymbolTable()

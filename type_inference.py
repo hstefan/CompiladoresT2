@@ -16,13 +16,13 @@ def infer_type(expr_node, var_table):
 def infer_expression(expr_node, var_table):
     if isinstance(expr_node, ast.BinaryOp):
         expr_node.type_ = match_binary(infer_expression(expr_node.arg_a), 
-            infer_expression(expr_node.arg_b), expr_node.op_type)
+        infer_expression(expr_node.arg_b), expr_node.op_type)
     elif isinstance(expr_node, ast.UnaryOp):
         expr_node.type_ = match_unary(infer_expression(expr_node.arg), expr_node.op_type)
     elif isinstance(expr_node, ast.Variable):
         expr_node.type_ = var_table[expr_node.identifier]
-   
-   return expr_nod.type_
+    return expr_node.type_
+
 def match_binary(arg_a, arg_b, op_type):
     inf_a = infer_expression(arg_a)
     inf_b = infer_expression(arg_b)
@@ -43,7 +43,8 @@ def type_size(type_node):
     elif isinstance(type_node, ast.TypeReference):
         return 8 #ptr size
     elif isinstance(type_node, ast.TypeArray):
-        return type_size(type_node.subtype * type_node.size)
+        return type_size(type_node.subtype) * type_node.size
     elif isinstance(type_node, int):
         return sz_table[type_node]
+
 
