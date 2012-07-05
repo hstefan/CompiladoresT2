@@ -15,15 +15,14 @@ def infer_type(expr_node, var_table):
 
 def infer_expression(expr_node, var_table):
     if isinstance(expr_node, ast.BinaryOp):
-        return match_binary(infer_expression(expr_node.arg_a), 
+        expr_node.type_ = match_binary(infer_expression(expr_node.arg_a), 
             infer_expression(expr_node.arg_b), expr_node.op_type)
     elif isinstance(expr_node, ast.UnaryOp):
-        return match_unary(infer_expression(expr_node.arg), expr_node.op_type)
-    elif isinstance(expr_node, ast.Literal):
-        return expr_node.type_
+        expr_node.type_ = match_unary(infer_expression(expr_node.arg), expr_node.op_type)
     elif isinstance(expr_node, ast.Variable):
-        return var_table[expr_node.identifier]
-
+        expr_node.type_ = var_table[expr_node.identifier]
+   
+   return expr_nod.type_
 def match_binary(arg_a, arg_b, op_type):
     inf_a = infer_expression(arg_a)
     inf_b = infer_expression(arg_b)
