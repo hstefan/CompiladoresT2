@@ -310,3 +310,16 @@ class VariableDeclaration(Statement):
         self.type_expr.accept(table)
         if self.initializer is not None:
             self.initializer.accept(table)
+
+class ConditionCheck(Statement):
+    def __init__(self, condition):
+        self.condition = condition # Expression
+
+    def __str__(self):
+        return str(self.condition) + '?'
+
+    def accept(self, table):
+        super().accept(table)
+        table[ConditionCheck](self)
+
+        self.condition.accept(table)
