@@ -101,12 +101,13 @@ class LValueDereference(LValue):
     def accept(self, table):
         super().accept(table)
         table[LValueDereference](self)
-
+        self.resolved_type = None
         self.subexpr.accept(table)
 
 class LValueIndex(LValue):
     def __init__(self, subexpr, index_expression):
         self.subexpr = subexpr # LValue
+        self.resolved_type = None
         self.index_expression = index_expression # Expression
 
     def __str__(self):
@@ -122,7 +123,7 @@ class LValueIndex(LValue):
 class LValueVariable(LValue):
     def __init__(self, identifier):
         self.identifier = identifier # str
-
+        self.resolved_type = None
     def __str__(self):
         return self.identifier
 
